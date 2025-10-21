@@ -158,3 +158,4 @@ class QrCodeController extends Controller
         return redirect()->away($qrCode->content);
     }
 }
+
