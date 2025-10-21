@@ -1,24 +1,58 @@
-# Используем официальный PHP образ с расширениями
+# --------------------------
+# Базовый образ PHP с FPM
+# --------------------------
 FROM php:8.2-fpm
 
-# Устанавливаем зависимости
+# --------------------------
+# Установка системных зависимостей
+# --------------------------
 RUN apt-get update && apt-get install -y \
-    git unzip libpng-dev libonig-dev libxml2-dev zip curl \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+    git \
+    unzip \
+    curl \
+    libzip-dev \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    nano \
+    libpq-dev \
+    && docker-php-ext-install pdo pdo_mysql zip gd
 
-# Устанавливаем Composer
-COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
+# --------------------------
+# Установка Composer
+# --------------------------
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Копируем проект
+# --------------------------
+# Установка Node.js (для Vite)
+# --------------------------
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g npm
+
+# --------------------------
+# Создание рабочей директории
+# --------------------------
 WORKDIR /var/www/html
+
+# Копируем файлы проекта
 COPY . .
 
-# Устанавливаем зависимости Laravel
-RUN composer install --no-dev --optimize-autoloader
+# Устанавливаем зависимости Laravel и Node
+RUN composer install --no-interaction --optimize-autoloader
+RUN npm install
+RUN npm run build
 
-# Настраиваем права
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# Копируем права на storage
+RUN chown -R www-data:www-data storage bootstrap/cache
 
-# Устанавливаем порт и команду запуска
+# --------------------------
+# Порт
+# --------------------------
 EXPOSE 8080
+
+# --------------------------
+# Команда запуска Laravel сервера
+# --------------------------
 CMD php artisan serve --host=0.0.0.0 --port=8080
