@@ -1,58 +1,30 @@
 # --------------------------
-# Базовый образ PHP 8.1 с FPM
+# Базовый образ PHP 8.1
 # --------------------------
-FROM php:8.1-fpm
+FROM php:8.1-apache
 
-# --------------------------
-# Установка системных зависимостей
-# --------------------------
-RUN apt-get update && apt-get install -y \
-    git \
-    unzip \
-    curl \
-    libzip-dev \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
-    nano \
-    libpq-dev \
-    && docker-php-ext-install pdo pdo_mysql zip gd
+# Устанавливаем расширения и Composer
+RUN apt-get update && apt-get install -y git unzip libpng-dev libonig-dev libxml2-dev zip && \
+    docker-php-ext-install pdo_mysql zip gd && \
+    a2enmod rewrite
 
-# --------------------------
-# Установка Composer
-# --------------------------
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# --------------------------
-# Установка Node.js (для Vite)
-# --------------------------
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-    && apt-get install -y nodejs \
-    && npm install -g npm
-
-# --------------------------
-# Рабочая директория
-# --------------------------
 WORKDIR /var/www/html
 
 # Копируем файлы проекта
 COPY . .
 
-# Устанавливаем зависимости Laravel и Node
-RUN composer install --no-interaction --optimize-autoloader
-RUN npm install
-RUN npm run build
+# Устанавливаем зависимости Laravel
+RUN composer install --no-interaction --optimize-autoloader --no-dev
 
-# Права на storage и cache
+# Разрешаем Apache .htaccess
 RUN chown -R www-data:www-data storage bootstrap/cache
 
-# --------------------------
-# Открываем порт
-# --------------------------
+# Laravel настройки
+RUN php artisan config:clear && php artisan route:clear && php artisan view:clear
+
 EXPOSE 8080
 
-# --------------------------
-# Запускаем Laravel сервер
-# --------------------------
-CMD php artisan serve --host=0.0.0.0 --port=8080
+# Запуск Apache на 8080
+CMD ["apache2-foreground"]
