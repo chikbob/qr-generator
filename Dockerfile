@@ -11,14 +11,12 @@ WORKDIR /var/www/html
 
 RUN mkdir -p database && chown -R www-data:www-data database
 
-COPY database.sqlite database.sqlite
-RUN chown www-data:www-data database.sqlite
+COPY database/database.sqlite database/database.sqlite
+RUN chown www-data:www-data database/database.sqlite
 
 COPY . .
 
 RUN composer install --no-interaction --optimize-autoloader --no-dev
-
-RUN php artisan config:cache
 
 RUN chown -R www-data:www-data storage bootstrap/cache
 
