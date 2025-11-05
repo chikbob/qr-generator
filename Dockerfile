@@ -11,8 +11,8 @@ WORKDIR /var/www/html
 
 RUN mkdir -p database && chown -R www-data:www-data database
 
-COPY database/database.sqlite database/database.sqlite
-RUN chown www-data:www-data database/database.sqlite
+COPY database.sqlite database.sqlite
+RUN chown www-data:www-data database.sqlite
 
 COPY . .
 
