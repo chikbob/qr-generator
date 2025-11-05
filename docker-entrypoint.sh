@@ -8,7 +8,12 @@ if [ ! -f /var/www/html/database/database.sqlite ]; then
     chown www-data:www-data /var/www/html/database/database.sqlite
 fi
 
+echo "DB_CONNECTION: $DB_CONNECTION"
+echo "DB_DATABASE: $DB_DATABASE"
+
 # Запускаем миграции и сиды в продакшене без запроса подтверждения
+php artisan config:clear
+php artisan config:cache
 php artisan migrate --force --seed
 
 # Запускаем Apache в foreground
