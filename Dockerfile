@@ -1,7 +1,7 @@
 # --------------------------
-# Базовый образ PHP с FPM
+# Базовый образ PHP 8.1 с FPM
 # --------------------------
-FROM php:8.2-fpm
+FROM php:8.1-fpm
 
 # --------------------------
 # Установка системных зависимостей
@@ -32,7 +32,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && npm install -g npm
 
 # --------------------------
-# Создание рабочей директории
+# Рабочая директория
 # --------------------------
 WORKDIR /var/www/html
 
@@ -44,15 +44,15 @@ RUN composer install --no-interaction --optimize-autoloader
 RUN npm install
 RUN npm run build
 
-# Копируем права на storage
+# Права на storage и cache
 RUN chown -R www-data:www-data storage bootstrap/cache
 
 # --------------------------
-# Порт
+# Открываем порт
 # --------------------------
 EXPOSE 8080
 
 # --------------------------
-# Команда запуска Laravel сервера
+# Запускаем Laravel сервер
 # --------------------------
 CMD php artisan serve --host=0.0.0.0 --port=8080
