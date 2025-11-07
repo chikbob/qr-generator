@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Plan;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -31,21 +32,15 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
+        $defaultPlan = Plan::where('is_default', true)->first();
+        if ($defaultPlan) {
+            $user->plan()->associate($defaultPlan);
+            $user->save();
+        }
+
         Auth::login($user);
 
-        return Inertia::render('Home', [
-            'auth' => [
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                ],
-            ],
-            'flash' => [
-                'success' => session('success'),
-                'error' => session('error'),
-            ],
-        ]);
+        return redirect()->route('home')->with('success', 'Регистрация прошла успешно!');
     }
 }
 

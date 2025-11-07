@@ -23,28 +23,40 @@ class QrCodeController extends Controller
     // 🟢 Список QR-кодів користувача
     public function index()
     {
-        $codes = QrCode::where('user_id', auth()->id())
-            ->latest()
-            ->withCount('scans')
-            ->get()
-            ->map(fn($code) => [
-                'id' => $code->id,
-                'content' => $code->content,
-                'image_path' => asset($code->image_path),
-                'size' => $code->size,
-                'color_dark' => $code->color_dark,
-                'color_light' => $code->color_light,
-                'is_dynamic' => $code->is_dynamic,
-                'slug' => $code->slug,
-                'redirect_uuid' => $code->redirect_uuid,
-                'scans_count' => $code->scans_count,
-                'dynamic_url' => $code->is_dynamic ? url('/r/' . $code->slug) : null,
-                'created_at' => $code->created_at->toDateTimeString(),
-            ]);
+        $user = auth()->user();
+
+        $query = QrCode::where('user_id', $user->id)->latest()->withCount('scans');
+
+        // 🧠 Если план — Free, не показываем динамические QR
+        if (!$user->plan || $user->plan->name === 'Free') {
+            $query->where('is_dynamic', false);
+        }
+
+        $codes = $query->get()->map(fn($code) => [
+            'id' => $code->id,
+            'content' => $code->content,
+            'image_path' => asset($code->image_path),
+            'size' => $code->size,
+            'color_dark' => $code->color_dark,
+            'color_light' => $code->color_light,
+            'is_dynamic' => $code->is_dynamic,
+            'redirect_uuid' => $code->redirect_uuid,
+            'slug' => $code->slug,
+            'dynamic_url' => $code->is_dynamic ? url('/r/' . $code->slug) : null,
+            'scans_count' => $code->scans_count,
+            'created_at' => $code->created_at->toDateTimeString(),
+        ]);
 
         return Inertia::render('QrHistory', [
             'codes' => $codes,
-            'auth' => ['user' => $this->authUserArray()],
+            'auth' => [
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'plan' => $user->plan?->name ?? 'Free',
+                ],
+            ],
             'flash' => [
                 'success' => session('success'),
                 'error' => session('error'),
@@ -52,9 +64,16 @@ class QrCodeController extends Controller
         ]);
     }
 
+
     // 🟡 Створення нового QR-коду (звичайного або динамічного)
     public function store(Request $request)
     {
+        $user = auth()->user();
+        $planName = $user->plan?->name ?? 'Free';
+        if ($request->boolean('is_dynamic') && !in_array($planName, ['Pro', 'Enterprise'])) {
+            return redirect()->route('history')->with('error', 'Динамічні QR-коди доступні лише для користувачів з планом Pro або Enterprise.');
+        }
+
         $data = $request->validate([
             'content' => 'required|string|max:500',
             'size' => 'integer|min:100|max:800',
@@ -68,23 +87,21 @@ class QrCodeController extends Controller
 
         $fileName = 'qr-' . time() . '.png';
         $path = 'qr_codes/' . $fileName;
+        $slug = \Str::uuid()->toString();
 
-        // Генеруємо унікальний slug для кожного коду
-        $slug = Str::uuid()->toString();
-
-        // Якщо QR динамічний — вставляємо redirect URL
         $finalContent = $data['is_dynamic']
             ? url('/r/' . $slug)
             : $data['content'];
 
         \SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')
+            ->encoding('UTF-8')
             ->size($data['size'])
             ->color(...sscanf($data['color_dark'], "#%02x%02x%02x"))
             ->backgroundColor(...sscanf($data['color_light'], "#%02x%02x%02x"))
             ->generate($finalContent, public_path($path));
 
         QrCode::create([
-            'user_id' => auth()->id(),
+            'user_id' => $user->id,
             'content' => $data['content'],
             'image_path' => $path,
             'size' => $data['size'],
@@ -104,9 +121,10 @@ class QrCodeController extends Controller
         $qrCode = QrCode::find($id);
 
         if (!$qrCode) {
-            return response()->json(['error' => 'QR-код не знайдено'], 404);
+            return redirect()->route('history')->with('error', 'QR-код не знайдено');
         }
 
+        // Удаляем файл, если существует
         $filePath = public_path($qrCode->image_path);
         if (!empty($qrCode->image_path) && file_exists($filePath) && is_file($filePath)) {
             @unlink($filePath);
@@ -114,29 +132,10 @@ class QrCodeController extends Controller
 
         $qrCode->delete();
 
-        $codes = QrCode::where('user_id', auth()->id())
-            ->latest()
-            ->withCount('scans')
-            ->get()
-            ->map(fn($code) => [
-                'id' => $code->id,
-                'content' => $code->content,
-                'image_path' => asset($code->image_path),
-                'size' => $code->size,
-                'color_dark' => $code->color_dark,
-                'color_light' => $code->color_light,
-                'is_dynamic' => $code->is_dynamic,
-                'redirect_uuid' => $code->redirect_uuid,
-                'scans_count' => $code->scans_count,
-                'created_at' => $code->created_at->toDateTimeString(),
-            ]);
-
-        return response()->json([
-            'success' => true,
-            'flash' => 'QR-код видалено!',
-            'codes' => $codes,
-        ]);
+        // ✅ Просто редиректим обратно на /history с сообщением
+        return redirect()->route('history')->with('success', 'QR-код видалено!');
     }
+
 
     // 🟣 Обробка сканування динамічного QR
     public function redirect($slug, Request $request)

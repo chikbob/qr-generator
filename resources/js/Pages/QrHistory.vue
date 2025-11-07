@@ -3,6 +3,13 @@
         <div class="qr-history">
             <h2>Історія QR-кодів</h2>
 
+            <div v-if="flash?.success" class="flash success">
+                {{ flash.success }}
+            </div>
+            <div v-if="flash?.error" class="flash error">
+                {{ flash.error }}
+            </div>
+
             <div v-if="codes.length === 0" class="empty-history">
                 Історія порожня. Згенеруйте та збережіть QR-коди, щоб вони з'явились тут.
             </div>
@@ -40,17 +47,27 @@
 
 <script setup>
 import AppLayout from "@/Layouts/AppLayout.vue"
-import { usePage, router } from "@inertiajs/vue3"
-import { ref, watch } from "vue"
+import {usePage, router} from "@inertiajs/vue3"
+import {ref, watch} from "vue"
 
 const page = usePage()
 const codes = ref(page.props.codes || [])
+const flash = ref(page.props.flash || {})
 
-watch(() => page.props.flash?.success, val => val && alert(val))
+// ✅ следим за обновлением flash-сообщений из Inertia
+watch(() => page.props.flash, (val) => {
+    flash.value = val
+    if (val?.success) {
+        // Можно заменить alert на toast при желании
+        console.log('✅', val.success)
+    }
+})
 
+// 🔹 Утилиты форматирования
 const truncateContent = (text) => text.length > 50 ? text.substring(0, 50) + "..." : text
 const formatDate = (d) => new Date(d).toLocaleString()
 
+// 🔹 Скачать QR
 const downloadAgain = (item) => {
     const link = document.createElement("a")
     link.href = item.image_path
@@ -58,6 +75,7 @@ const downloadAgain = (item) => {
     link.click()
 }
 
+// 🔹 Копировать контент
 const copyToClipboard = async (text) => {
     try {
         await navigator.clipboard.writeText(text)
@@ -67,59 +85,89 @@ const copyToClipboard = async (text) => {
     }
 }
 
+// 🔹 Удаление с мгновенным обновлением списка
 const deleteItem = (item) => {
     if (!confirm("Видалити цей QR-код?")) return
-    router.delete(`/qr/${item.id}`)
+
+    router.delete(`/qr/${item.id}`, {
+        preserveScroll: true,
+        onSuccess: () => {
+            // сразу обновляем локально без перезагрузки
+            codes.value = codes.value.filter(code => code.id !== item.id)
+        },
+    })
 }
 </script>
 
 <style scoped>
-.analytics {
-    margin: 10px 0;
-    color: #2b5cff;
-}
-
-.visit-link {
-    color: #2196f3;
-    text-decoration: underline;
-    font-size: 0.9em;
-}
-
 .qr-history {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
+    max-width: 900px;
+    margin: 2rem auto;
+    background: #fff;
+    border-radius: 8px;
+    color: #2c3e50;
+}
+
+h2 {
+    font-weight: 700;
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    color: #34495e;
+    text-align: center;
+}
+
+.flash {
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.flash.success {
+    background-color: #e6ffed;
+    color: #1a7f37;
+    border: 1px solid #b3ffcc;
+}
+
+.flash.error {
+    background-color: #ffe6e6;
+    color: #b80000;
+    border: 1px solid #ffb3b3;
 }
 
 .empty-history {
     text-align: center;
-    padding: 40px;
-    color: #666;
     font-style: italic;
+    color: #666;
+    padding: 3rem 0;
 }
 
 .history-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+    gap: 1.5rem;
 }
 
 .history-card {
     border: 1px solid #ddd;
     border-radius: 8px;
     overflow: hidden;
-    transition: 0.2s;
+    background: #fff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
 }
 
 .history-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
 .qr-preview {
     background: #f5f5f5;
-    padding: 15px;
+    padding: 1rem;
     text-align: center;
+    border-radius: 6px 6px 0 0;
 }
 
 .qr-preview img {
@@ -128,32 +176,76 @@ const deleteItem = (item) => {
 }
 
 .card-content {
-    padding: 15px;
+    padding: 1rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.content-text {
+    font-size: 1rem;
+    color: #34495e;
+    margin-bottom: 0.5rem;
+    word-break: break-word;
+}
+
+.card-meta small {
+    color: #666;
+    font-size: 0.85rem;
+    line-height: 1.2;
+}
+
+.analytics {
+    color: #2b5cff;
+    margin: 1rem 0;
+    font-weight: 600;
+}
+
+.visit-link {
+    color: #2196f3;
+    font-size: 0.9rem;
+    text-decoration: underline;
 }
 
 .card-actions {
     display: flex;
-    gap: 8px;
+    gap: 10px;
+    margin-top: 1rem;
 }
 
 .action-btn {
     flex: 1;
-    padding: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
     border: none;
-    border-radius: 4px;
     cursor: pointer;
     color: white;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
 }
 
 .action-btn.download {
     background-color: #4caf50;
 }
 
+.action-btn.download:hover {
+    background-color: #388e3c;
+}
+
 .action-btn.copy {
     background-color: #2196f3;
 }
 
+.action-btn.copy:hover {
+    background-color: #0b7dda;
+}
+
 .action-btn.delete {
     background-color: #f44336;
+}
+
+.action-btn.delete:hover {
+    background-color: #d32f2f;
 }
 </style>

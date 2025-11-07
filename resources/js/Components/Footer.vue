@@ -15,6 +15,6 @@ const currentYear = computed(() => new Date().getFullYear())
     background: #2c3e50;
     color: white;
     text-align: center;
-    padding: 15px;
+    padding: 15pxА
 }
 </style>

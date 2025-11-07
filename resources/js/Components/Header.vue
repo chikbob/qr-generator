@@ -1,40 +1,48 @@
 <template>
     <header class="app-header">
         <nav>
-            <a href="/">Головна</a>
-            <a href="/generate">Генератор</a>
-            <a href="/scan">Сканер</a>
+            <Link href="/">Головна</Link>
+            <Link href="/generate">Генератор</Link>
+            <Link href="/scan">Сканер</Link>
 
             <template v-if="user">
-                <a href="/history">Історія</a>
-                <a href="/profile">Профіль</a>
-                <button @click="logout" class="logout-btn">Вийти</button>
+                <Link href="/history">Історія</Link>
+                <Link href="/profile">Профіль</Link>
+                <Link href="/plans">Тарифи</Link>
+                <Link href="/contacts">Контакти</Link>
+                <form @submit.prevent="logout">
+                    <button type="submit" class="logout-btn">Вийти</button>
+                </form>
             </template>
 
+
             <template v-else>
-                <a href="/login">Увійти</a>
-                <a href="/register">Реєстрація</a>
-                <button @click="logout" class="logout-btn">Вийти</button>
+                <Link href="/login">Увійти</Link>
+                <Link href="/register">Реєстрація</Link>
             </template>
         </nav>
     </header>
 </template>
 
 <script setup>
-import {router, usePage} from '@inertiajs/vue3'
-import {computed} from 'vue'
+import { useForm, usePage, Link } from '@inertiajs/vue3'
+import { computed } from 'vue'
 
 const page = usePage()
 const user = computed(() => page.props.auth?.user)
 
-console.log(page.props)
+const form = useForm({})
 
 const logout = () => {
-    router.post('/logout')
+    if (typeof route === 'function') {
+        form.post(route('logout'))
+    } else {
+        form.post('/logout')
+    }
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .app-header {
     background: #2c3e50;
     padding: 15px;
@@ -45,6 +53,7 @@ nav {
     gap: 15px;
     justify-content: center;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 nav a {
@@ -52,18 +61,37 @@ nav a {
     text-decoration: none;
     padding: 5px 10px;
     border-radius: 4px;
+    transition: background 0.2s;
+}
+
+nav a:hover {
+    background: #34495e;
 }
 
 nav a.router-link-exact-active {
     background: #42b983;
 }
 
+/* Кнопка выхода */
 .logout-btn {
     background: #e74c3c;
+    font-weight: 600;
     color: white;
     border: none;
     border-radius: 4px;
-    padding: 5px 10px;
+    padding: 7px 10px;
     cursor: pointer;
+
+    &:hover {
+        background: #c54033;
+    }
+}
+
+/* Новая ссылка обратной связи */
+.feedback-link {
+    background: #3498db;
+}
+.feedback-link:hover {
+    background: #2980b9;
 }
 </style>

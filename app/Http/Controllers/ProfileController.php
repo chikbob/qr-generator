@@ -15,6 +15,11 @@ class ProfileController extends Controller
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
+            'plan' => $user->plan ? [
+                'id' => $user->plan->id,
+                'name' => $user->plan->name,
+                'price' => $user->plan->price,
+            ] : null,
         ] : null;
     }
 
@@ -35,5 +40,14 @@ class ProfileController extends Controller
 
         return redirect()->route('profile.edit');
     }
-}
 
+    public function show()
+    {
+        return Inertia::render('Profile', [
+            'auth' => [
+                'user' => $this->authUserArray(),
+            ],
+        ]);
+    }
+
+}

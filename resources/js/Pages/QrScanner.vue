@@ -355,22 +355,25 @@ onUnmounted(() => {
 
 <style scoped>
 .qr-scanner-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
+    max-width: 900px;
+    margin: 2rem auto;
+    background: #fff;
+    border-radius: 8px;
+    color: #2c3e50;
     font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
 h1 {
+    font-weight: 700;
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    color: #34495e;
     text-align: center;
-    color: #2c3e50;
-    margin-bottom: 30px;
-    font-weight: 600;
 }
 
 .scanner-wrapper {
-    background: #f8f9fa;
-    border-radius: 12px;
+    background: #fff;
+    border-radius: 8px;
     padding: 20px;
     margin-bottom: 30px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
@@ -381,7 +384,7 @@ h1 {
     width: 100%;
     aspect-ratio: 1;
     max-height: 60vh;
-    background: #000;
+    background: #f5f5f5;
     border-radius: 8px;
     overflow: hidden;
     margin-bottom: 20px;
@@ -417,9 +420,10 @@ h1 {
 .scanner-placeholder {
     position: absolute;
     text-align: center;
-    color: white;
+    color: #666;
     z-index: 0;
     padding: 20px;
+    font-style: italic;
 }
 
 .placeholder-icon {
@@ -427,6 +431,7 @@ h1 {
     height: 80px;
     margin: 0 auto 20px;
     opacity: 0.8;
+    color: #34495e;
 }
 
 .placeholder-icon svg {
@@ -441,11 +446,14 @@ h1 {
     left: 0;
     right: 0;
     text-align: center;
-    color: white;
-    background: rgba(0, 0, 0, 0.7);
+    color: #2b5cff;
+    background: rgba(255 255 255 / 0.9);
     padding: 12px;
     z-index: 2;
-    font-size: 0.9rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 4px;
+    box-shadow: 0 0 8px rgba(43, 92, 255, 0.3);
 }
 
 .scanner-controls {
@@ -477,7 +485,7 @@ h1 {
 .device-select {
     padding: 10px 12px;
     border-radius: 6px;
-    border: 1px solid #ced4da;
+    border: 1px solid #ddd;
     background: white;
     font-size: 0.9rem;
     width: 100%;
@@ -486,8 +494,8 @@ h1 {
 
 .device-select:focus {
     outline: none;
-    border-color: #42b983;
-    box-shadow: 0 0 0 2px rgba(66, 185, 131, 0.2);
+    border-color: #2b5cff;
+    box-shadow: 0 0 0 2px rgba(43, 92, 255, 0.2);
 }
 
 .scan-btn {
@@ -495,35 +503,35 @@ h1 {
     border: none;
     border-radius: 6px;
     font-size: 1rem;
-    font-weight: 500;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: background-color 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
+    color: white;
 }
 
 .scan-btn.start {
-    background-color: #42b983;
-    color: white;
+    background-color: #2b5cff;
+}
+
+.scan-btn.start:hover:not(:disabled) {
+    background-color: #1a3fcc;
 }
 
 .scan-btn.stop {
     background-color: #f44336;
-    color: white;
 }
 
-.scan-btn:hover:not(:disabled) {
-    opacity: 0.9;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+.scan-btn.stop:hover:not(:disabled) {
+    background-color: #d32f2f;
 }
 
 .scan-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-    box-shadow: none;
 }
 
 .action-btn {
@@ -531,12 +539,13 @@ h1 {
     border: none;
     border-radius: 6px;
     font-size: 0.9rem;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background-color 0.3s ease;
     display: flex;
     align-items: center;
     gap: 6px;
+    color: white;
 }
 
 .action-btn svg {
@@ -547,17 +556,26 @@ h1 {
 
 .action-btn.copy {
     background-color: #2196f3;
-    color: white;
+}
+
+.action-btn.copy:hover:not(:disabled) {
+    background-color: #0b7dda;
 }
 
 .action-btn.open {
     background-color: #4caf50;
-    color: white;
+}
+
+.action-btn.open:hover:not(:disabled) {
+    background-color: #388e3c;
 }
 
 .action-btn.clear {
     background-color: #f44336;
-    color: white;
+}
+
+.action-btn.clear:hover:not(:disabled) {
+    background-color: #d32f2f;
 }
 
 .action-btn.refresh {
@@ -565,30 +583,24 @@ h1 {
     color: white;
 }
 
-.action-btn:hover:not(:disabled) {
-    opacity: 0.9;
-    transform: translateY(-1px);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.action-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+.action-btn.refresh:hover:not(:disabled) {
+    background-color: #e68a00;
 }
 
 .scan-result {
-    background: white;
-    border-radius: 12px;
+    background: #fff;
+    border-radius: 8px;
     padding: 20px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
     margin-top: 20px;
+    color: #2c3e50;
 }
 
 .scan-result h3 {
     margin-top: 0;
     margin-bottom: 15px;
-    color: #2c3e50;
-    font-weight: 500;
+    color: #34495e;
+    font-weight: 700;
 }
 
 .result-content {
@@ -601,24 +613,26 @@ h1 {
     width: 100%;
     min-height: 100px;
     padding: 12px;
-    border: 1px solid #ced4da;
+    border: 1px solid #ddd;
     border-radius: 6px;
     resize: vertical;
     font-family: inherit;
-    font-size: 0.95rem;
+    font-size: 1rem;
     line-height: 1.5;
+    color: #34495e;
 }
 
 .result-textarea:focus {
     outline: none;
-    border-color: #42b983;
-    box-shadow: 0 0 0 2px rgba(66, 185, 131, 0.2);
+    border-color: #2b5cff;
+    box-shadow: 0 0 0 2px rgba(43, 92, 255, 0.2);
 }
 
 .result-actions {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
+    justify-content: flex-start;
 }
 
 .error-message {
@@ -626,7 +640,7 @@ h1 {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: white;
+    background: #fff;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
@@ -634,11 +648,11 @@ h1 {
     text-align: center;
     max-width: 90%;
     width: 400px;
+    color: #b80000;
 }
 
 .error-message p {
     margin: 0 0 15px;
-    color: #d32f2f;
     font-size: 1rem;
 }
 
@@ -649,20 +663,6 @@ h1 {
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 0.9rem;
-}
-
-.permission-hint {
-    background-color: #e3f2fd;
-    border-left: 4px solid #2196f3;
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 4px;
-}
-
-.permission-hint p {
-    margin: 0;
-    color: #1976d2;
     font-size: 0.9rem;
 }
 
@@ -684,7 +684,9 @@ h1 {
         gap: 12px;
     }
 
-    .device-select, .scan-btn, .action-btn {
+    .device-select,
+    .scan-btn,
+    .action-btn {
         width: 100%;
     }
 

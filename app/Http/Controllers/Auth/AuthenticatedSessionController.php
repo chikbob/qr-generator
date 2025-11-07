@@ -20,21 +20,9 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
         $request->session()->regenerate();
 
-        // рендерим главную сразу с пользователем
-        return Inertia::render('Home', [
-            'auth' => [
-                'user' => [
-                    'id' => $request->user()->id,
-                    'name' => $request->user()->name,
-                    'email' => $request->user()->email,
-                ],
-            ],
-            'flash' => [
-                'success' => session('success'),
-                'error' => session('error'),
-            ],
-        ]);
+        return redirect()->intended(route('home'))->with('success', 'Успішний вхід!');
     }
+
 
     public function destroy(Request $request)
     {
