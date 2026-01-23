@@ -1,21 +1,21 @@
 <template>
     <AppLayout>
         <div class="qr-generator">
-            <h2 style="margin: 2rem 0; font-size: 1.8rem">Генератор QR-кодів</h2>
+            <h2 style="margin: 2rem 0; font-size: 1.8rem">{{ t('qrGenerator.title') }}</h2>
 
             <div class="input-container">
                 <textarea
                     v-model="inputText"
                     @input="handleInput"
-                    placeholder="Введіть текст або посилання для генерації QR-коду"
+                    :placeholder="t('qrGenerator.placeholder')"
                     rows="4"
                     :class="{ 'error': showWarning }"
                 ></textarea>
                 <div v-if="showWarning" class="warning-message">
-                    Увага: Занадто довгий текст може знизити читаність QR-коду
+                    {{ t('qrGenerator.warning') }}
                 </div>
                 <div class="char-count">
-                    Символів: {{ inputText.length }} / 500
+                    {{ t('qrGenerator.characters') }}: {{ inputText.length }} / 500
                 </div>
             </div>
 
@@ -26,18 +26,18 @@
 
                 <div class="controls">
                     <label>
-                        Розмір QR-коду:
+                        {{ t('qrGenerator.sizeLabel') }}:
                         <input type="range" v-model="size" min="100" max="500" />
                         {{ size }}px
                     </label>
 
                     <div class="color-controls">
                         <label>
-                            Колір:
+                            {{ t('qrGenerator.colorLabel') }}:
                             <input type="color" v-model="colorDark" @input="generateQR" />
                         </label>
                         <label>
-                            Фон:
+                            {{ t('qrGenerator.backgroundLabel') }}:
                             <input type="color" v-model="colorLight" @input="generateQR" />
                         </label>
                     </div>
@@ -45,30 +45,29 @@
                     <div class="checkbox">
                         <label v-if="canUseDynamic">
                             <input type="checkbox" v-model="isDynamic" />
-                            Зробити динамічним (зі статистикою)
+                            {{ t('qrGenerator.dynamicLabel') }}
                         </label>
                         <p v-else class="pro-hint">
-                            🔒 Динамічні QR-коди доступні лише для користувачів з планом
-                            <strong>Pro</strong> або <strong>Enterprise</strong>.
+                            🔒 {{ t('qrGenerator.dynamicProHint') }}
                         </p>
                     </div>
 
                     <div class="action-buttons">
                         <button @click="downloadQR" class="download-btn">
-                            Завантажити PNG
+                            {{ t('qrGenerator.downloadPNG') }}
                         </button>
                         <button @click="downloadSVG" class="download-btn secondary">
-                            Завантажити SVG
+                            {{ t('qrGenerator.downloadSVG') }}
                         </button>
                         <button @click="saveToHistory" class="download-btn save-btn">
-                            Зберегти в історію
+                            {{ t('qrGenerator.saveHistory') }}
                         </button>
                     </div>
                 </div>
             </div>
 
             <div v-else class="placeholder">
-                Введіть текст вище, щоб згенерувати QR-код
+                {{ t('qrGenerator.placeholderEmpty') }}
             </div>
         </div>
     </AppLayout>
@@ -79,6 +78,9 @@ import { ref, watch, onMounted, computed } from 'vue'
 import QRCode from 'qrcode'
 import { router, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import { useI18n } from '@/lang/useI18n'
+
+const { t } = useI18n()
 
 const page = usePage()
 const userPlan = computed(() => page.props.auth?.user?.plan || 'Free')
@@ -95,21 +97,19 @@ const WARNING_THRESHOLD = 300
 
 const showWarning = computed(() => inputText.value.length > WARNING_THRESHOLD)
 
-console.log(page.props.auth?.user)
 // Можно ли использовать динамические QR-коды
 const canUseDynamic = computed(() => ['Pro', 'Enterprise'].includes(userPlan.value))
 
-// Следим за изменением isDynamic и запрещаем ставить его, если нет доступа
 watch(isDynamic, (val) => {
     if (val && !canUseDynamic.value) {
-        alert('Динамічні QR-коди доступні лише для користувачів з планом Pro або Enterprise.')
+        alert(t('qrGenerator.dynamicAlert'))
         isDynamic.value = false
     }
 })
 
 const saveToHistory = () => {
     if (isDynamic.value && !canUseDynamic.value) {
-        alert('Динамічні QR-коди доступні лише для користувачів з планом Pro або Enterprise.')
+        alert(t('qrGenerator.dynamicAlert'))
         isDynamic.value = false
         return
     }
@@ -132,7 +132,7 @@ const generateQR = async () => {
             color: { dark: colorDark.value, light: colorLight.value },
         })
     } catch (err) {
-        console.error('Помилка генерації QR-коду:', err)
+        console.error(t('qrGenerator.errorGenerate'), err)
     }
 }
 
@@ -159,7 +159,7 @@ const downloadSVG = async () => {
         link.click()
         URL.revokeObjectURL(url)
     } catch (err) {
-        console.error('Помилка генерації SVG:', err)
+        console.error(t('qrGenerator.errorGenerateSVG'), err)
     }
 }
 
@@ -175,6 +175,7 @@ onMounted(() => inputText.value && generateQR())
 </script>
 
 <style scoped>
+/* Стили оставь без изменений */
 .qr-generator {
     max-width: 600px;
     margin: 2rem auto;

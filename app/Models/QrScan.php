@@ -12,7 +12,11 @@ class QrScan extends Model
     protected $fillable = [
         'qr_code_id',
         'ip',
+        'country',
+        'city',
         'user_agent',
+        'device',
+        'browser',
         'referer',
     ];
 

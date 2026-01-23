@@ -37,6 +37,12 @@ main {
     border-radius: 8px;
 }
 
+input,
+select,
+textarea {
+    font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
 h1, h2, h3 {
     font-weight: 700;
     margin-bottom: 1rem;
@@ -70,42 +76,6 @@ label {
     font-weight: 600;
     margin-bottom: 0.5rem;
     color: #34495e;
-}
-
-input[type="text"],
-input[type="email"],
-input[type="password"],
-select,
-textarea,
-input[type="range"],
-input[type="color"] {
-    padding: 10px 14px;
-    border: 1.5px solid #ccc;
-    border-radius: 6px;
-    font-size: 1rem;
-    font-family: inherit;
-    transition: border-color 0.25s ease, box-shadow 0.25s ease;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-input[type="range"] {
-    padding: 0;
-    height: 30px;
-}
-
-input[type="color"] {
-    padding: 2px;
-    width: 50px;
-    cursor: pointer;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-    outline: none;
-    border-color: #42b983;
-    box-shadow: 0 0 6px rgba(66, 185, 131, 0.5);
 }
 
 input:disabled,
@@ -305,4 +275,36 @@ button:hover:not(:disabled),
 .status.resolved {
     background-color: #27ae60;
 }
+
+/* 🎨 Универсальный фиксированный стиль для всех select */
+select,
+.filter-select,
+.sort-select {
+    cursor: pointer;
+    line-height: 1.2;
+    padding: 0 2rem 0 0.75rem; /* место под стрелку справа */
+    font-size: 15px;
+    border-radius: 0.5rem;
+    border: 1px solid #d1d5db;
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='22' viewBox='0 0 24 24' width='22' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    background-size: 22px;
+    box-shadow: none !important;
+    outline: none !important;
+    transition: none !important;
+    color: #333;
+    vertical-align: middle;
+}
+
+/* Без эффектов наведения/фокуса */
+select:hover,
+select:focus {
+    color: inherit !important;
+    box-shadow: none !important;
+    outline: none !important;
+    transition: none !important;
+}
+
 

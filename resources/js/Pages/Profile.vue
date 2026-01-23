@@ -1,29 +1,44 @@
 <template>
     <AppLayout>
         <div class="profile-page">
-            <h2>Профіль користувача</h2>
+            <h2>{{ t('profile.title') }}</h2>
 
-            <p><strong>Ім'я:</strong> {{ user?.name ?? 'Невідомо' }}</p>
-            <p><strong>Email:</strong> {{ user?.email ?? 'Невідомо' }}</p>
             <p>
-                <strong>Тариф: </strong>
+                <strong>{{ t('profile.name') }}:</strong>
+                {{ user?.name ?? t('common.unknown') }}
+            </p>
+
+            <p>
+                <strong>{{ t('profile.email') }}:</strong>
+                {{ user?.email ?? t('common.unknown') }}
+            </p>
+
+            <p>
+                <strong>{{ t('profile.plan') }}:</strong>
                 <span v-if="user?.plan">
-                    {{ user.plan.name }} ({{ user.plan.price }} USD)
+                    {{" " + user.plan.name }} ({{ user.plan.price }} USD)
                 </span>
-                <span v-else>Free</span>
+                <span v-else>
+                    {{ t('profile.free') }}
+                </span>
             </p>
 
             <form @submit.prevent="logout">
-                <button type="submit" class="btn-logout">Вийти</button>
+                <button type="submit" class="btn-logout">
+                    {{ t('common.logout') }}
+                </button>
             </form>
         </div>
     </AppLayout>
 </template>
 
 <script setup>
-import { usePage, useForm } from '@inertiajs/vue3'
-import { computed } from 'vue'
-import AppLayout from "@/Layouts/AppLayout.vue"
+import {usePage, useForm} from '@inertiajs/vue3'
+import {computed} from 'vue'
+import AppLayout from '@/Layouts/AppLayout.vue'
+import {useI18n} from '@/lang/useI18n'
+
+const {t} = useI18n()
 
 const page = usePage()
 const user = computed(() => page.props.auth.user)

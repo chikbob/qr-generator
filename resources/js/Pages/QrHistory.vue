@@ -1,251 +1,548 @@
 <template>
     <AppLayout>
         <div class="qr-history">
-            <h2>Історія QR-кодів</h2>
+            <h2>{{ t('qrHistory.title') }}</h2>
 
-            <div v-if="flash?.success" class="flash success">
-                {{ flash.success }}
-            </div>
-            <div v-if="flash?.error" class="flash error">
-                {{ flash.error }}
+            <!-- 🔍 Панель управления -->
+            <div class="controls">
+                <input
+                    type="text"
+                    v-model="searchQuery"
+                    :placeholder="t('qrHistory.searchPlaceholder')"
+                    class="search-input"
+                />
+
+                <select v-model="filterType" class="filter-select">
+                    <option value="all">{{ t('qrHistory.filter.all') }}</option>
+                    <option value="dynamic">{{ t('qrHistory.filter.dynamic') }}</option>
+                    <option value="static">{{ t('qrHistory.filter.static') }}</option>
+                </select>
+
+                <select v-model="sortOrder" class="sort-select">
+                    <option value="desc">{{ t('qrHistory.sort.desc') }}</option>
+                    <option value="asc">{{ t('qrHistory.sort.asc') }}</option>
+                </select>
+
+                <!--
+                <button @click="showDeleteAllModal = true" class="delete-all-btn">
+                    🗑️ {{ t('qrHistory.deleteAll') }}
+                </button>
+                -->
             </div>
 
-            <div v-if="codes.length === 0" class="empty-history">
-                Історія порожня. Згенеруйте та збережіть QR-коди, щоб вони з'явились тут.
+            <!-- Flash сообщения -->
+            <div name="fade">
+                <div v-if="flash?.success" class="flash success">{{ flash.success }}</div>
+                <div v-if="flash?.error" class="flash error">{{ flash.error }}</div>
             </div>
 
+            <!-- Пустая история -->
+            <div v-if="filteredCodes.length === 0" class="empty-history">
+                <p>{{ t('qrHistory.empty.title') }}</p>
+                <small>{{ t('qrHistory.empty.subtitle') }}</small>
+            </div>
+
+            <!-- Список кодов -->
             <div v-else class="history-grid">
-                <div v-for="item in codes" :key="item.id" class="history-card">
-                    <div class="qr-preview">
-                        <img :src="item.image_path" :alt="item.content">
+                <div v-for="item in filteredCodes" :key="item.id" class="history-card">
+                    <div class="qr-header">
+                        <div class="qr-preview">
+                            <img :src="item.image_path" :alt="item.content" />
+                        </div>
+                        <div class="qr-meta">
+                            <p class="content-text" :title="item.content">
+                                {{ truncateContent(item.content) }}
+                            </p>
+                            <div class="meta-row">
+                                <span class="meta-item">📅 {{ formatDate(item.created_at) }}</span>
+                                <span class="meta-item">📏 {{ item.size }} px</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="card-content">
-                        <p class="content-text">{{ truncateContent(item.content) }}</p>
-                        <div class="card-meta">
-                            <small>{{ formatDate(item.created_at) }}</small><br>
-                            <small>Розмір: {{ item.size }}px</small>
+                    <div class="qr-body">
+                        <div class="qr-type" :class="{ dynamic: item.is_dynamic }">
+                            {{ item.is_dynamic ? t('qrHistory.type.dynamic') : t('qrHistory.type.static') }}
                         </div>
 
-                        <div v-if="item.is_dynamic" class="analytics">
-                            <strong>Динамічний</strong>
-                            <p>Перегляди: {{ item.scans_count ?? 0 }}</p>
-                            <a :href="item.dynamic_url" target="_blank" class="visit-link">Перейти</a>
+                        <div v-if="item.is_dynamic" class="qr-stats">
+                            <span class="stat"><strong>📈 {{ t('qrHistory.stats.views') }}:</strong> {{ item.scans_count ?? 0 }}</span>
+                            <a :href="item.dynamic_url" target="_blank" class="visit-link">🔗 {{ t('qrHistory.stats.visit') }}</a>
                         </div>
 
-                        <div class="card-actions">
-                            <button @click="downloadAgain(item)" class="action-btn download">Завантажити</button>
-                            <button @click="copyToClipboard(item.content)" class="action-btn copy">Копіювати</button>
-                            <button @click="deleteItem(item)" class="action-btn delete">Видалити</button>
+                        <div class="card-actions mid-actions">
+                            <button @click="downloadFile(item, 'png')" class="action-btn download">🖼️ PNG</button>
+                            <button @click="downloadFile(item, 'svg')" class="action-btn download-alt">🧩 SVG</button>
+                        </div>
+
+                        <div class="card-actions bottom-actions">
+                            <button @click="copyToClipboard(item.content)" class="action-btn copy">📋 {{ t('qrHistory.actions.copy') }}</button>
+                            <button
+                                v-if="item.is_dynamic"
+                                @click="openAnalytics(item.id)"
+                                class="action-btn analytics-btn"
+                            >
+                                📊 {{ t('qrHistory.actions.analytics') }}
+                            </button>
+                            <button @click="deleteItem(item)" class="action-btn delete">🗑️ {{ t('qrHistory.actions.delete') }}</button>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Модальное окно для удаления всех QR-кодов (закомментировано) -->
+            <!--
+            <div
+                v-if="showDeleteAllModal"
+                class="modal-overlay"
+                @click.self="showDeleteAllModal = false"
+            >
+                <div class="modal-content">
+                    <h3>{{ t('qrHistory.deleteModal.title') }}</h3>
+                    <p>{{ t('qrHistory.deleteModal.message') }}</p>
+                    <div class="modal-actions">
+                        <button @click="deleteAll" class="action-btn delete">{{ t('qrHistory.deleteModal.confirm') }}</button>
+                        <button @click="showDeleteAllModal = false" class="action-btn cancel">{{ t('qrHistory.deleteModal.cancel') }}</button>
+                    </div>
+                </div>
+            </div>
+            -->
         </div>
     </AppLayout>
 </template>
 
 <script setup>
 import AppLayout from "@/Layouts/AppLayout.vue"
-import {usePage, router} from "@inertiajs/vue3"
-import {ref, watch} from "vue"
+import { usePage, router } from "@inertiajs/vue3"
+import { ref, computed, watch } from "vue"
+import { useI18n } from '@/lang/useI18n'
+
+const { t } = useI18n()
 
 const page = usePage()
 const codes = ref(page.props.codes || [])
 const flash = ref(page.props.flash || {})
 
-// ✅ следим за обновлением flash-сообщений из Inertia
-watch(() => page.props.flash, (val) => {
-    flash.value = val
-    if (val?.success) {
-        // Можно заменить alert на toast при желании
-        console.log('✅', val.success)
+const searchQuery = ref("")
+const filterType = ref("all")
+const sortOrder = ref("desc")
+
+const showDeleteAllModal = ref(false)
+
+watch(() => page.props.flash, (val) => (flash.value = val))
+
+const filteredCodes = computed(() => {
+    let list = [...codes.value]
+
+    if (filterType.value === "dynamic") {
+        list = list.filter((c) => c.is_dynamic)
+    } else if (filterType.value === "static") {
+        list = list.filter((c) => !c.is_dynamic)
     }
+
+    if (searchQuery.value.trim()) {
+        const q = searchQuery.value.toLowerCase()
+        list = list.filter((c) => c.content.toLowerCase().includes(q))
+    }
+
+    list.sort((a, b) => {
+        return sortOrder.value === "asc"
+            ? new Date(a.created_at) - new Date(b.created_at)
+            : new Date(b.created_at) - new Date(a.created_at)
+    })
+
+    return list
 })
 
-// 🔹 Утилиты форматирования
-const truncateContent = (text) => text.length > 50 ? text.substring(0, 50) + "..." : text
+const truncateContent = (text) => (text.length > 50 ? text.substring(0, 50) + "..." : text)
 const formatDate = (d) => new Date(d).toLocaleString()
+const openAnalytics = (id) => router.visit(`/qr/${id}/analytics`)
 
-// 🔹 Скачать QR
-const downloadAgain = (item) => {
-    const link = document.createElement("a")
-    link.href = item.image_path
-    link.download = `qr-code-${new Date(item.created_at).getTime()}.png`
-    link.click()
+const downloadFile = async (item, type = "png") => {
+    try {
+        const { default: QRCode } = await import("qrcode")
+
+        if (type === "png") {
+            const canvas = document.createElement("canvas")
+            await QRCode.toCanvas(canvas, item.content, {
+                margin: 4,
+                scale: 8,
+                color: { dark: "#000000", light: "#ffffff" },
+                width: item.size || 200,
+            })
+            const link = document.createElement("a")
+            link.href = canvas.toDataURL("image/png")
+            link.download = `qr-code-${item.id}.png`
+            link.click()
+            return
+        }
+
+        if (type === "svg") {
+            const svg = await QRCode.toString(item.content, {
+                type: "svg",
+                margin: 4,
+                color: { dark: "#000000", light: "#ffffff" },
+                width: item.size || 200,
+            })
+            const blob = new Blob([svg], { type: "image/svg+xml" })
+            const url = URL.createObjectURL(blob)
+            const link = document.createElement("a")
+            link.href = url
+            link.download = `qr-code-${item.id}.svg`
+            link.click()
+            URL.revokeObjectURL(url)
+        }
+    } catch (err) {
+        console.error(t('qrHistory.errors.downloadError'), err)
+        alert(t('qrHistory.errors.downloadFailed'))
+    }
 }
 
-// 🔹 Копировать контент
 const copyToClipboard = async (text) => {
     try {
         await navigator.clipboard.writeText(text)
-        alert("Текст скопійовано!")
+        alert(t('qrHistory.actions.copySuccess'))
     } catch {
-        alert("Не вдалося скопіювати")
+        alert(t('qrHistory.actions.copyFail'))
     }
 }
 
-// 🔹 Удаление с мгновенным обновлением списка
 const deleteItem = (item) => {
-    if (!confirm("Видалити цей QR-код?")) return
-
+    if (!confirm(t('qrHistory.confirm.deleteItem'))) return
     router.delete(`/qr/${item.id}`, {
         preserveScroll: true,
         onSuccess: () => {
-            // сразу обновляем локально без перезагрузки
-            codes.value = codes.value.filter(code => code.id !== item.id)
+            codes.value = codes.value.filter((code) => code.id !== item.id)
         },
     })
 }
+
+// const deleteAll = () => {
+//     if (!confirm(t('qrHistory.confirm.deleteAll'))) return
+//
+//     router.delete('/qr/delete-all', {
+//         preserveScroll: true,
+//         onSuccess: () => {
+//             codes.value = []
+//             showDeleteAllModal.value = false
+//             alert(t('qrHistory.confirm.deleteAllSuccess'))
+//         },
+//         onError: () => {
+//             alert(t('qrHistory.confirm.deleteAllFail'))
+//         },
+//     })
+// }
 </script>
 
 <style scoped>
+/* стили без изменений */
 .qr-history {
-    max-width: 900px;
-    margin: 2rem auto;
-    background: #fff;
-    border-radius: 8px;
-    color: #2c3e50;
+    max-width: 1000px;
+    margin: auto;
+    border-radius: 16px;
+    padding: 2rem;
+    color: #34495e;
 }
 
 h2 {
     font-weight: 700;
-    font-size: 1.8rem;
-    margin-bottom: 1.5rem;
-    color: #34495e;
+    font-size: 1.9rem;
+    margin: 0 0 1.5rem;
     text-align: center;
+    color: #34495e;
 }
 
+/* 🔍 Панель управления */
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+    align-items: center;
+}
+
+.search-input,
+.filter-select,
+.sort-select {
+    padding: 0.6rem 0.9rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: 0.2s;
+}
+
+.search-input {
+    flex: 1 1 250px;
+    min-width: 200px;
+}
+
+.search-input:focus {
+    border-color: #6366f1;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.filter-select,
+.sort-select {
+    flex: 0 0 170px;
+}
+
+.delete-all-btn {
+    flex: 0 0 auto;
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+    white-space: nowrap;
+}
+
+.delete-all-btn:hover {
+    background-color: #dc2626;
+}
+
+/* Flash */
 .flash {
     padding: 12px 16px;
-    border-radius: 6px;
+    border-radius: 8px;
     font-weight: 600;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.2rem;
+    text-align: center;
 }
 
 .flash.success {
-    background-color: #e6ffed;
-    color: #1a7f37;
-    border: 1px solid #b3ffcc;
+    background-color: #e8fce8;
+    color: #166534;
 }
 
 .flash.error {
-    background-color: #ffe6e6;
-    color: #b80000;
-    border: 1px solid #ffb3b3;
+    background-color: #fee2e2;
+    color: #b91c1c;
 }
 
-.empty-history {
-    text-align: center;
-    font-style: italic;
-    color: #666;
-    padding: 3rem 0;
-}
-
+/* Сетка */
 .history-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
     gap: 1.5rem;
 }
 
 .history-card {
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    background: #ffffff;
+    border-radius: 12px;
     overflow: hidden;
-    background: #fff;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
+    transition: 0.3s ease;
 }
 
 .history-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
 }
 
-.qr-preview {
-    background: #f5f5f5;
-    padding: 1rem;
-    text-align: center;
-    border-radius: 6px 6px 0 0;
+/* Заголовок */
+.qr-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.2rem 1rem;
+    border-bottom: 1px solid #f0f0f0;
 }
 
 .qr-preview img {
-    max-width: 100%;
-    height: auto;
-}
-
-.card-content {
-    padding: 1rem;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: #f3f4f6;
+    padding: 6px;
 }
 
 .content-text {
-    font-size: 1rem;
-    color: #34495e;
-    margin-bottom: 0.5rem;
-    word-break: break-word;
-}
-
-.card-meta small {
-    color: #666;
-    font-size: 0.85rem;
-    line-height: 1.2;
-}
-
-.analytics {
-    color: #2b5cff;
-    margin: 1rem 0;
     font-weight: 600;
+    color: #1e3a8a;
+    margin-bottom: 0.4rem;
+    word-break: break-word;
+    text-align: left;
+}
+
+.meta-row {
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+/* Тело карточки */
+.qr-body {
+    padding: 1rem 1.2rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 200px;
+}
+
+.qr-type {
+    font-weight: 600;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    display: inline-block;
+    margin-bottom: 0.6rem;
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.qr-type.dynamic {
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    color: white;
+}
+
+/* Аналитика */
+.qr-stats {
+    margin-bottom: 0.6rem;
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: space-between;
 }
 
 .visit-link {
-    color: #2196f3;
-    font-size: 0.9rem;
+    color: #2563eb;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.visit-link:hover {
     text-decoration: underline;
 }
 
+/* Кнопки */
 .card-actions {
     display: flex;
-    gap: 10px;
-    margin-top: 1rem;
+    gap: 8px;
+}
+
+.mid-actions {
+    justify-content: space-between;
+    margin-top: 0.4rem;
+}
+
+.bottom-actions {
+    justify-content: space-between;
+    margin-top: 0.8rem;
 }
 
 .action-btn {
     flex: 1;
-    padding: 8px 12px;
-    border-radius: 6px;
+    padding: 0.6rem 0.8rem;
     border: none;
-    cursor: pointer;
+    border-radius: 6px;
     color: white;
     font-weight: 600;
-    transition: background-color 0.3s ease;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: 0.25s ease;
 }
 
-.action-btn.download {
-    background-color: #4caf50;
+.download {
+    background: #10b981;
 }
 
-.action-btn.download:hover {
-    background-color: #388e3c;
+.download:hover {
+    background: #059669;
 }
 
-.action-btn.copy {
-    background-color: #2196f3;
+.download-alt {
+    background: #0ea5e9;
 }
 
-.action-btn.copy:hover {
-    background-color: #0b7dda;
+.download-alt:hover {
+    background: #0284c7;
 }
 
-.action-btn.delete {
-    background-color: #f44336;
+.copy {
+    background: #3b82f6;
 }
 
-.action-btn.delete:hover {
-    background-color: #d32f2f;
+.copy:hover {
+    background: #2563eb;
+}
+
+.analytics-btn {
+    background: #8b5cf6;
+}
+
+.analytics-btn:hover {
+    background: #7c3aed;
+}
+
+.delete {
+    background: #ef4444;
+}
+
+.delete:hover {
+    background: #dc2626;
+}
+
+/* Пустая история */
+.empty-history {
+    text-align: center;
+    padding: 3rem 0;
+    color: #6b7280;
+    font-style: italic;
+}
+
+/* Модальное окно */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h3 {
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.modal-content p {
+    margin-bottom: 1.5rem;
+    color: #444;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.action-btn.cancel {
+    background: #999;
+}
+
+.action-btn.cancel:hover {
+    background: #777;
 }
 </style>

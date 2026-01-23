@@ -1,19 +1,22 @@
 <template>
     <AppLayout>
         <div class="auth-form">
-            <h2>Вхід</h2>
+            <h2>{{ t('login.title') }}</h2>
             <form @submit.prevent="login">
-                <input v-model="form.email" type="email" placeholder="Email" required/>
-                <input v-model="form.password" type="password" placeholder="Пароль" required/>
-                <button type="submit">Увійти</button>
+                <input v-model="form.email" type="email" :placeholder="t('login.emailPlaceholder')" required />
+                <input v-model="form.password" type="password" :placeholder="t('login.passwordPlaceholder')" required />
+                <button type="submit">{{ t('login.submitButton') }}</button>
             </form>
         </div>
     </AppLayout>
 </template>
 
 <script setup>
-import {useForm} from '@inertiajs/vue3'
+import { useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import { useI18n } from '@/lang/useI18n'
+
+const { t } = useI18n()
 
 const form = useForm({
     email: '',
@@ -26,6 +29,7 @@ const login = async () => {
 </script>
 
 <style scoped>
+/* Оставляем стили без изменений */
 .auth-form {
     max-width: 400px;
     margin: 5rem auto;

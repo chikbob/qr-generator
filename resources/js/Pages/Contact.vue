@@ -1,62 +1,91 @@
 <template>
     <AppLayout>
         <div class="contact-container">
-            <h2 style="margin: 2rem 0; display: flex; justify-content: center; font-size: 1.8rem">Контакти</h2>
+            <h2
+                style="margin: 2rem 0; display: flex; justify-content: center; font-size: 1.8rem">
+                {{ $t('contacts.title') }}
+            </h2>
 
             <div class="contact-card">
                 <div class="contact-info">
-                    <p><strong>Пошта:</strong> support@qrapp.com</p>
-                    <p><strong>Телефон:</strong> +380 67 123 4567</p>
-                    <p><strong>Адреса:</strong> м. Київ, вул. Прикладна, 1</p>
+                    <p>
+                        <strong>{{ $t('contacts.email') }}:</strong>
+                        support@qrapp.com
+                    </p>
+                    <p>
+                        <strong>{{ $t('contacts.phone') }}:</strong>
+                        {{ $t('contacts.number') }}
+                    </p>
+                    <p>
+                        <strong>{{ $t('contacts.address') }}:</strong>
+                        {{ $t('contacts.addressValue') }}
+                    </p>
                 </div>
 
                 <div class="feedback-header">
-                    <h2>Залишити звернення</h2>
+                    <h2>{{ $t('contacts.feedback.title') }}</h2>
                     <Link href="/feedback" class="feedback-link">
-                        Переглянути всі звернення →
+                        {{ $t('contacts.feedback.viewAll') }} →
                     </Link>
                 </div>
 
                 <form @submit.prevent="submit" class="feedback-form">
                     <div class="form-group">
-                        <label for="subject">Тема</label>
+                        <label for="subject">
+                            {{ $t('contacts.form.subject') }}
+                        </label>
                         <input
                             id="subject"
                             v-model="form.subject"
                             type="text"
-                            placeholder="Введіть тему звернення"
+                            :placeholder="$t('contacts.form.subjectPlaceholder')"
                             required
                         />
                     </div>
 
                     <div class="form-group">
-                        <label for="category">Категорія</label>
+                        <label for="category">
+                            {{ $t('contacts.form.category') }}
+                        </label>
                         <select id="category" v-model="form.category" required>
-                            <option value="general">Загальне питання</option>
-                            <option value="bug">Помилка</option>
-                            <option value="idea">Ідея / Пропозиція</option>
+                            <option value="general">
+                                {{ $t('categories.general') }}
+                            </option>
+                            <option value="bug">
+                                {{ $t('categories.bug') }}
+                            </option>
+                            <option value="idea">
+                                {{ $t('categories.idea') }}
+                            </option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label for="message">Повідомлення</label>
+                        <label for="message">
+                            {{ $t('contacts.form.message') }}
+                        </label>
                         <textarea
                             id="message"
                             v-model="form.message"
                             rows="5"
-                            placeholder="Опишіть своє питання або проблему"
+                            :placeholder="$t('contacts.form.messagePlaceholder')"
                             required
                         ></textarea>
                     </div>
 
-                    <button type="submit" class="submit-btn" :disabled="form.processing">
-                        Надіслати звернення
+                    <button
+                        type="submit"
+                        class="submit-btn"
+                        :disabled="form.processing">
+                        {{ $t('contacts.form.submit') }}
                     </button>
                 </form>
 
                 <transition name="fade">
-                    <div v-if="form.recentlySuccessful" class="success-message">
-                        Ваше звернення успішно надіслано!
+                    <div
+                        v-if="form.recentlySuccessful"
+                        class="success-message">
+                        {{ $t('contacts.form.success') }}
                     </div>
                 </transition>
             </div>
@@ -146,7 +175,6 @@ const submit = () => {
     }
 }
 
-/* === ЕДИНЫЙ СТИЛЬ ДЛЯ ВСЕХ ПОЛЕЙ === */
 .feedback-form {
     display: flex;
     flex-direction: column;
@@ -171,7 +199,6 @@ const submit = () => {
             border-radius: 8px;
             font-size: 1rem;
             padding: 12px 14px;
-            background: #fff;
             transition: all 0.2s ease;
             color: #2c3e50;
 

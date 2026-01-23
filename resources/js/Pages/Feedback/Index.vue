@@ -1,33 +1,52 @@
 <template>
     <AppLayout>
         <div class="feedback-container">
-            <h2 style="margin: 2rem 0; display: flex; justify-content: center; font-size: 1.8rem">Список звернень</h2>
+            <h2 style="margin: 2rem 0; display: flex; justify-content: center; font-size: 1.8rem">
+                {{ t('list.title') }}
+            </h2>
 
             <div class="feedback-list-card">
                 <table class="feedback-table">
                     <thead>
                     <tr>
-                        <th>Тема</th>
-                        <th>Категорія</th>
-                        <th>Статус</th>
-                        <th>Дата створення</th>
-                        <th>Дія</th>
+                        <th>{{ t('list.subject') }}</th>
+                        <th>{{ t('list.category') }}</th>
+                        <th>{{ t('list.status') }}</th>
+                        <th>{{ t('list.createdAt') }}</th>
+                        <th>{{ t('list.action') }}</th>
                     </tr>
                     </thead>
+
                     <tbody>
                     <tr v-for="item in feedbacks" :key="item.id">
                         <td>{{ item.subject }}</td>
-                        <td>{{ categoryLabel(item.category) }}</td>
+
                         <td>
-                            <span :class="['status-badge', item.status]">{{ statusLabel(item.status) }}</span>
+                            {{ t(`categories.${item.category}`) }}
                         </td>
-                        <td>{{ formatDate(item.created_at) }}</td>
+
                         <td>
-                            <Link :href="route('feedback.show', item.id)" class="action-link">Переглянути</Link>
+                            <span :class="['status-badge', item.status]">
+                                {{ t(`statuses.${item.status}`) }}
+                            </span>
+                        </td>
+
+                        <td>{{ formatDate(item.created_at) }}</td>
+
+                        <td>
+                            <Link
+                                :href="route('feedback.show', item.id)"
+                                class="action-link"
+                            >
+                                {{ t('list.view') }}
+                            </Link>
                         </td>
                     </tr>
+
                     <tr v-if="feedbacks.length === 0">
-                        <td colspan="5" class="no-data">Заявок немає</td>
+                        <td colspan="5" class="no-data">
+                            {{ t('list.empty') }}
+                        </td>
                     </tr>
                     </tbody>
                 </table>
@@ -39,42 +58,16 @@
 <script setup>
 import {Link} from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import {useI18n} from "@/lang/useI18n.js";
 
-const props = defineProps({
+const { t } = useI18n()
+
+defineProps({
     feedbacks: Array,
 })
 
-const feedbacks = props.feedbacks
-
-const categoryLabel = (category) => {
-    switch (category) {
-        case 'general':
-            return 'Загальне питання'
-        case 'bug':
-            return 'Помилка'
-        case 'idea':
-            return 'Ідея / Пропозиція'
-        default:
-            return category
-    }
-}
-
-const statusLabel = (status) => {
-    switch (status) {
-        case 'new':
-            return 'В очікуванні'
-        case 'in_progress':
-            return 'В роботі'
-        case 'resolved':
-            return 'Вирішено'
-        default:
-            return status
-    }
-}
-
 const formatDate = (dateStr) => {
-    const date = new Date(dateStr)
-    return date.toLocaleDateString('uk-UA', {
+    return new Date(dateStr).toLocaleDateString(undefined, {
         year: 'numeric',
         month: 'long',
         day: 'numeric',

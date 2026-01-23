@@ -6,6 +6,8 @@ use App\Models\QrCode;
 use App\Models\QrScan;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Http;
+use Jenssegers\Agent\Agent;
 use Illuminate\Support\Str;
 
 class QrCodeController extends Controller
@@ -137,24 +139,87 @@ class QrCodeController extends Controller
     }
 
 
-    // 🟣 Обробка сканування динамічного QR
     public function redirect($slug, Request $request)
     {
         $qrCode = QrCode::where('slug', $slug)->firstOrFail();
 
         if ($qrCode->is_dynamic) {
+            $ip = $request->ip();
+            $agent = new Agent();
+            $agent->setUserAgent($request->userAgent());
+            $referer = $request->headers->get('referer');
+
+            // 🔹 Геолокація — без заглушки
+            $country = 'Невідомо';
+            $city = 'Невідомо';
+
+            try {
+                $geo = Http::get("https://ipinfo.io/{$ip}/json")->json();
+                $country = $geo['country'] ?? 'Невідомо';
+                $city = $geo['city'] ?? 'Невідомо';
+
+                if (!empty($geo['country_name'])) {
+                    $country = $geo['country_name'];
+                    $city = $geo['city'] ?? 'Невідомо';
+                }
+            } catch (\Exception $e) {
+                // Можна залогувати помилку
+                \Log::warning('Geo API failed', ['ip' => $ip, 'error' => $e->getMessage()]);
+            }
+
             QrScan::create([
                 'qr_code_id' => $qrCode->id,
-                'ip' => $request->ip(),
+                'ip' => $ip,
+                'country' => $country,
+                'city' => $city,
                 'user_agent' => $request->userAgent(),
-                'referer' => $request->headers->get('referer'),
+                'device' => $agent->device() ?: 'Невідомо',
+                'browser' => $agent->browser() ?: 'Невідомо',
+                'referer' => $referer,
             ]);
-
-            // увеличиваем счетчик просмотров
-            $qrCode->increment('scan_count');
         }
 
         return redirect()->away($qrCode->content);
+    }
+
+    public function analytics($id)
+    {
+        $qrCode = QrCode::with('scans')->withCount('scans')->findOrFail($id);
+
+        if ($qrCode->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $scans = $qrCode->scans->map(fn($scan) => [
+            'id' => $scan->id,
+            'ip' => $scan->ip,
+            'country' => $scan->country,
+            'city' => $scan->city,
+            'browser' => $scan->browser,
+            'device' => $scan->device,
+            'referer' => $scan->referer,
+            'created_at' => $scan->created_at->toDateTimeString(),
+        ]);
+
+        return Inertia::render('QrAnalytics', [
+            'qrCode' => [
+                'id' => $qrCode->id,
+                'content' => $qrCode->content,
+                'image_path' => asset($qrCode->image_path),
+                'scans_count' => $qrCode->scans_count,
+                'created_at' => $qrCode->created_at->toDateTimeString(),
+            ],
+            'scans' => $scans,
+        ]);
+    }
+
+    public function deleteAll()
+    {
+        $user = auth()->user();
+
+        QrCode::where('user_id', $user->id)->delete();
+
+        return back()->with('success', 'Усі QR-коди видалено успішно!');
     }
 }
 

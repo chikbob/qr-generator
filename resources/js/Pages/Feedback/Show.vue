@@ -1,21 +1,38 @@
 <template>
     <AppLayout>
         <div class="show-container">
-            <Link href="/feedback" class="back-link">← Назад до списку</Link>
+            <Link href="/feedback" class="back-link">
+                {{ $t('show.back') }}
+            </Link>
 
             <h1 class="title">{{ feedback.subject }}</h1>
 
             <div class="feedback-details">
-                <p><strong>Категорія:</strong> {{ categoryLabel(feedback.category) }}</p>
-                <p><strong>Статус:</strong> <span :class="['status', feedback.status]">{{
-                        statusLabel(feedback.status)
-                    }}</span></p>
-                <p><strong>Тариф:</strong> {{ priorityLabel(feedback.priority) }}</p>
-                <p><strong>Дата створення:</strong> {{ formatDate(feedback.created_at) }}</p>
+                <p>
+                    <strong>{{ $t('show.category') }}:</strong>
+                    {{ $t(`categories.${feedback.category}`) }}
+                </p>
+
+                <p>
+                    <strong>{{ $t('show.status') }}:</strong>
+                    <span :class="['status', feedback.status]">
+                        {{ $t(`statuses.${feedback.status}`) }}
+                    </span>
+                </p>
+
+                <p>
+                    <strong>{{ $t('show.plan') }}:</strong>
+                    {{ $t(`priorities.${feedback.priority}`) }}
+                </p>
+
+                <p>
+                    <strong>{{ $t('show.createdAt') }}:</strong>
+                    {{ formatDate(feedback.created_at) }}
+                </p>
 
                 <hr/>
 
-                <p class="message-content" v-html="formattedMessage"></p>
+                <p class="message-content" v-html="formattedMessage"/>
             </div>
         </div>
     </AppLayout>
@@ -24,57 +41,19 @@
 <script setup>
 import {Link} from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
-import {computed} from "vue";
+import {computed} from 'vue'
 
 const props = defineProps({
     feedback: Object,
 })
 
-const categoryLabel = (cat) => {
-    switch (cat) {
-        case 'general':
-            return 'Загальне питання'
-        case 'bug':
-            return 'Помилка'
-        case 'idea':
-            return 'Ідея / Пропозиція'
-        default:
-            return cat
-    }
-}
-
-const statusLabel = (status) => {
-    switch (status) {
-        case 'new':
-            return 'В очікуванні'
-        case 'in_progress':
-            return 'В роботі'
-        case 'resolved':
-            return 'Вирішено'
-        default:
-            return status
-    }
-}
-
-const priorityLabel = (priority) => {
-    switch (priority) {
-        case 'high':
-            return 'Enterprice'
-        case 'medium':
-            return 'Pro'
-        case 'low':
-            return 'Free'
-        default:
-            return priority
-    }
-}
-
 const formatDate = (dateStr) => {
-    const d = new Date(dateStr)
-    return d.toLocaleString('uk-UA', {dateStyle: 'long', timeStyle: 'short'})
+    return new Date(dateStr).toLocaleString(undefined, {
+        dateStyle: 'long',
+        timeStyle: 'short',
+    })
 }
 
-// Чтобы корректно отображать переносы строк, заменим \n на <br>
 const formattedMessage = computed(() =>
     props.feedback.message
         ? props.feedback.message.replace(/\n/g, '<br />')

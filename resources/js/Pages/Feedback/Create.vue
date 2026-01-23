@@ -1,46 +1,37 @@
 <template>
     <AppLayout>
         <div class="form-container">
-            <h1>Зворотній зв’язок</h1>
+            <h1>{{ $t('create.title') }}</h1>
 
             <form @submit.prevent="submit" novalidate>
                 <div class="form-group">
-                    <label for="subject">Тема</label>
-                    <input
-                        id="subject"
-                        v-model="form.subject"
-                        type="text"
-                        class="form-input"
-                        required
-                        autocomplete="off"
-                    />
-                    <span v-if="form.errors.subject" class="error-text">{{ form.errors.subject }}</span>
+                    <label>{{ t('create.subject') }}</label>
+                    <input v-model="form.subject" class="form-input"/>
+                    <span v-if="form.errors.subject" class="error-text">
+                        {{ form.errors.subject }}
+                    </span>
                 </div>
 
                 <div class="form-group">
-                    <label for="category">Категорія</label>
-                    <select id="category" v-model="form.category" class="form-input">
-                        <option value="general">Загальне питання</option>
-                        <option value="bug">Помилка</option>
-                        <option value="idea">Ідея / Пропозиція</option>
+                    <label>{{ t('create.category') }}</label>
+                    <select v-model="form.category" class="form-input">
+                        <option value="general">{{ t('categories.general') }}</option>
+                        <option value="bug">{{ t('categories.bug') }}</option>
+                        <option value="idea">{{ t('categories.idea') }}</option>
                     </select>
-                    <span v-if="form.errors.category" class="error-text">{{ form.errors.category }}</span>
                 </div>
 
                 <div class="form-group">
-                    <label for="message">Повідомлення</label>
-                    <textarea
-                        id="message"
-                        v-model="form.message"
-                        rows="6"
-                        class="form-input"
-                        required
-                    ></textarea>
-                    <span v-if="form.errors.message" class="error-text">{{ form.errors.message }}</span>
+                    <label>{{ t('create.message') }}</label>
+                    <textarea v-model="form.message" rows="6" class="form-input"/>
                 </div>
 
-                <button type="submit" class="btn-primary" :disabled="form.processing">
-                    {{ form.processing ? 'Відправляємо...' : 'Відправити' }}
+                <button class="btn-primary" :disabled="form.processing">
+                    {{
+                        form.processing
+                            ? t('create.submitting')
+                            : t('create.submit')
+                    }}
                 </button>
             </form>
         </div>
@@ -48,8 +39,11 @@
 </template>
 
 <script setup>
-import { useForm } from '@inertiajs/vue3'
+import {useForm} from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import {useI18n} from "@/lang/useI18n.js";
+
+const { t } = useI18n()
 
 const form = useForm({
     subject: '',

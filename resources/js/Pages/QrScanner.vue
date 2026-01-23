@@ -1,30 +1,33 @@
 <template>
     <AppLayout>
         <div class="qr-scanner-container">
-            <h1>Сканер QR-кодів</h1>
+            <h1>{{ $t('qrScanner.title') }}</h1>
 
             <div class="scanner-wrapper">
                 <div class="video-container" :class="{ 'active': isScanning }">
                     <video ref="video" autoplay playsinline class="scanner-video"></video>
                     <div class="scan-frame"></div>
+
                     <div v-if="!isScanning" class="scanner-placeholder">
                         <div class="placeholder-icon">
                             <svg viewBox="0 0 24 24">
                                 <path
-                                    d="M4,4H7L9,2H15L17,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9Z"/>
+                                    d="M4,4H7L9,2H15L17,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9Z"
+                                />
                             </svg>
                         </div>
-                        <p>Натисніть "Почати сканування"</p>
+                        <p>{{ $t('qrScanner.placeholderText') }}</p>
                     </div>
+
                     <div v-if="isScanning" class="scanning-hint">
-                        Наведіть камеру на QR-код
+                        {{ $t('qrScanner.scanningHint') }}
                     </div>
                 </div>
 
                 <div class="scanner-controls">
                     <div class="camera-controls">
                         <div class="camera-selector" v-if="devices.length > 0">
-                            <label for="camera-select">Оберіть камеру:</label>
+                            <label for="camera-select">{{ $t('qrScanner.cameraLabel') }}</label>
                             <select
                                 id="camera-select"
                                 v-model="selectedDeviceId"
@@ -48,9 +51,10 @@
                         >
                             <svg viewBox="0 0 24 24">
                                 <path
-                                    d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"/>
+                                    d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"
+                                />
                             </svg>
-                            Оновити
+                            {{ $t('qrScanner.refreshButton') }}
                         </button>
                     </div>
 
@@ -59,29 +63,32 @@
                         :class="['scan-btn', isScanning ? 'stop' : 'start']"
                         :disabled="isLoadingDevices || devices.length === 0"
                     >
-                        <span v-if="isLoadingDevices">Завантаження...</span>
-                        <span v-else>{{ isScanning ? 'Зупинити' : 'Почати сканування' }}</span>
+                        <span v-if="isLoadingDevices">{{ $t('qrScanner.loadingDevices') }}</span>
+                        <span v-else>
+              {{ isScanning ? $t('qrScanner.stopScan') : $t('qrScanner.startScan') }}
+            </span>
                     </button>
                 </div>
             </div>
 
             <div v-if="result" class="scan-result">
-                <h3>Результат сканування:</h3>
+                <h3>{{ $t('qrScanner.scanResultTitle') }}</h3>
                 <div class="result-content">
-        <textarea
-            ref="resultText"
-            v-model="result"
-            readonly
-            class="result-textarea"
-            rows="4"
-        ></textarea>
+          <textarea
+              ref="resultText"
+              v-model="result"
+              readonly
+              class="result-textarea"
+              rows="4"
+          ></textarea>
                     <div class="result-actions">
                         <button @click="copyResult" class="action-btn copy">
                             <svg viewBox="0 0 24 24">
                                 <path
-                                    d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"/>
+                                    d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"
+                                />
                             </svg>
-                            Копіювати
+                            {{ $t('qrScanner.copyButton') }}
                         </button>
                         <button
                             v-if="isValidUrl(result)"
@@ -90,16 +97,18 @@
                         >
                             <svg viewBox="0 0 24 24">
                                 <path
-                                    d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"/>
+                                    d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"
+                                />
                             </svg>
-                            Відкрити
+                            {{ $t('qrScanner.openButton') }}
                         </button>
                         <button @click="clearResult" class="action-btn clear">
                             <svg viewBox="0 0 24 24">
                                 <path
-                                    d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+                                    d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6Z"
+                                />
                             </svg>
-                            Очистити
+                            {{ $t('qrScanner.clearButton') }}
                         </button>
                     </div>
                 </div>
@@ -107,7 +116,7 @@
 
             <div v-if="error" class="error-message">
                 <p>{{ error }}</p>
-                <button @click="clearError" class="error-btn">OK</button>
+                <button @click="clearError" class="error-btn">{{ $t('qrScanner.errorOk') }}</button>
             </div>
         </div>
     </AppLayout>
@@ -115,8 +124,16 @@
 
 <script setup>
 import {ref, onMounted, onUnmounted} from 'vue'
-import {BrowserQRCodeReader} from '@zxing/library'
-import AppLayout from "@/Layouts/AppLayout.vue";
+import {
+    BrowserQRCodeReader,
+    NotFoundException,
+    ChecksumException,
+    FormatException
+} from '@zxing/library'
+import AppLayout from '@/Layouts/AppLayout.vue'
+import {useI18n} from '@/lang/useI18n'
+
+const {t: $t} = useI18n()
 
 const video = ref(null)
 const result = ref(null)
@@ -132,12 +149,14 @@ let codeReader = null
 
 const getCameraLabel = (device) => {
     if (device.label) {
-        return device.label
-            .replace(/\([^)]*\)/g, '')
-            .replace(/facing\s\w+/i, '')
-            .trim() || `Камера ${device.deviceId.slice(0, 8)}`
+        return (
+            device.label
+                .replace(/\([^)]*\)/g, '')
+                .replace(/facing\s\w+/i, '')
+                .trim() || `Camera ${device.deviceId.slice(0, 8)}`
+        )
     }
-    return `Камера ${device.deviceId.slice(0, 8)}`
+    return `Camera ${device.deviceId.slice(0, 8)}`
 }
 
 const checkCameraPermission = async () => {
@@ -145,7 +164,6 @@ const checkCameraPermission = async () => {
         if (!navigator.permissions || !navigator.permissions.query) {
             return 'prompt'
         }
-
         const permissionStatus = await navigator.permissions.query({name: 'camera'})
         cameraPermission.value = permissionStatus.state
 
@@ -155,13 +173,12 @@ const checkCameraPermission = async () => {
                 getAvailableCameras()
             } else {
                 stopScan()
-                error.value = 'Дозвіл на камеру не надано. Будь ласка, надайте доступ у налаштуваннях браузера.'
+                error.value = $t('qrScanner.errorCameraDenied')
             }
         }
-
         return permissionStatus.state
     } catch (err) {
-        console.error('Помилка перевірки дозволу:', err)
+        console.error('Camera permission error:', err)
         return 'prompt'
     }
 }
@@ -176,31 +193,29 @@ const requestCameraAccess = async () => {
             }
         })
 
-        stream.getTracks().forEach(track => track.stop())
+        stream.getTracks().forEach((track) => track.stop())
         cameraPermission.value = 'granted'
         return true
     } catch (err) {
-        console.error('Помилка доступу до камери:', err)
+        console.error('Camera access error:', err)
         cameraPermission.value = 'denied'
 
         if (err.name === 'NotAllowedError') {
-            error.value = 'Доступ до камери заблоковано. Будь ласка, надайте дозвіл у налаштуваннях браузера.'
+            error.value = $t('qrScanner.errorCameraDenied')
         } else if (err.name === 'NotFoundError') {
-            error.value = 'Камера не знайдена. Переконайтесь, що камера підключена.'
+            error.value = $t('qrScanner.cameraNotFound')
         } else {
-            error.value = 'Помилка доступу до камери: ' + (err.message || 'Невідома помилка')
+            error.value = 'Camera access error: ' + (err.message || 'Unknown error')
         }
-
         return false
     }
 }
 
 const getAvailableCameras = async () => {
     if (cameraPermission.value === 'denied') {
-        error.value = 'Доступ до камери заблоковано. Будь ласка, надайте дозвіл у налаштуваннях браузера.'
+        error.value = $t('qrScanner.errorCameraDenied')
         return
     }
-
     if (cameraPermission.value !== 'granted') {
         const hasAccess = await requestCameraAccess()
         if (!hasAccess) return
@@ -214,23 +229,20 @@ const getAvailableCameras = async () => {
         const videoDevices = await codeReader.listVideoInputDevices()
 
         if (!videoDevices || videoDevices.length === 0) {
-            error.value = 'Камери не виявлено. Переконайтесь, що камера підключена.'
+            error.value = $t('qrScanner.cameraNotFound')
             return
         }
 
         devices.value = videoDevices
 
-        // Спроба знайти задню камеру
-        const backCamera = videoDevices.find(device =>
-            device.label.toLowerCase().includes('back') ||
-            device.label.toLowerCase().includes('rear')
+        const backCamera = videoDevices.find((device) =>
+            device.label.toLowerCase().includes('back') || device.label.toLowerCase().includes('rear')
         )
 
         selectedDeviceId.value = backCamera?.deviceId || videoDevices[0].deviceId
-
     } catch (err) {
-        console.error('Помилка отримання камер:', err)
-        error.value = 'Помилка отримання списку камер: ' + (err.message || 'Невідома помилка')
+        console.error('Error getting cameras:', err)
+        error.value = $t('qrScanner.errorLoadingDevices') + (err.message || '')
     } finally {
         isLoadingDevices.value = false
     }
@@ -258,7 +270,7 @@ const startScan = async () => {
     try {
         codeReader = new BrowserQRCodeReader({
             tryHarder: true,
-            timeout: 10000
+            delayBetweenScanAttempts: 500
         })
 
         result.value = null
@@ -270,11 +282,16 @@ const startScan = async () => {
             video.value,
             (scanResult, err) => {
                 if (err) {
-                    const errMsg = err?.message || String(err)
-                    if (!errMsg.includes('NotFoundException')) {
-                        console.error('Помилка сканування:', err)
-                        error.value = 'Помилка сканування: ' + errMsg
+                    if (
+                        err instanceof NotFoundException ||
+                        err instanceof ChecksumException ||
+                        err instanceof FormatException
+                    ) {
+                        return
                     }
+
+                    console.error('Scan error:', err)
+                    error.value = $t('qrScanner.errorScanning') + ': ' + (err.message || '')
                     return
                 }
 
@@ -285,9 +302,8 @@ const startScan = async () => {
             }
         )
     } catch (err) {
-        console.error('Помилка ініціалізації сканування:', err)
-        error.value = 'Помилка при запуску сканування: ' +
-            (err.message || 'Невідома помилка')
+        console.error('Scan init error:', err)
+        error.value = $t('qrScanner.errorScanning') + ': ' + (err.message || 'Unknown error')
         isScanning.value = false
     }
 }
@@ -303,7 +319,7 @@ const stopScan = async () => {
             codeReader = null
         }
     } catch (e) {
-        console.error('Помилка зупинки сканування:', e)
+        console.error('Stop scan error:', e)
     } finally {
         isScanning.value = false
     }
@@ -312,11 +328,11 @@ const stopScan = async () => {
 const copyResult = async () => {
     try {
         await navigator.clipboard.writeText(result.value)
-        error.value = 'Текст скопійовано в буфер обміну!'
-        setTimeout(() => error.value = null, 2000)
+        error.value = $t('qrScanner.copySuccess')
+        setTimeout(() => (error.value = null), 2000)
     } catch (err) {
-        console.error('Помилка копіювання:', err)
-        error.value = 'Не вдалося скопіювати текст: ' + (err.message || 'Невідома помилка')
+        console.error('Copy error:', err)
+        error.value = $t('qrScanner.copyFail') + ': ' + (err.message || 'Unknown error')
     }
 }
 
@@ -486,7 +502,6 @@ h1 {
     padding: 10px 12px;
     border-radius: 6px;
     border: 1px solid #ddd;
-    background: white;
     font-size: 0.9rem;
     width: 100%;
     transition: border-color 0.2s;

@@ -18,7 +18,6 @@ class QrCode extends Model
         'color_light',
         'is_dynamic',
         'slug',
-        'scan_count',
     ];
 
     public function scans()

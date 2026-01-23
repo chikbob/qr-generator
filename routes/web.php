@@ -72,6 +72,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/feedback/{feedback}', [FeedbackController::class, 'show'])->name('feedback.show');
     Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
 
+    Route::get('/qr/{id}/analytics', [QrCodeController::class, 'analytics'])->name('qr.analytics');
+
+    Route::delete('/qr/delete-all', [QrCodeController::class, 'deleteAll'])->name('qr.deleteAll');
 });
 
 // 🔗 редирект динамических QR (публичный)

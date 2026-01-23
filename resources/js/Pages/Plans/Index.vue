@@ -1,13 +1,13 @@
 <template>
     <AppLayout>
         <div class="plans-container">
-            <h2 style="margin: 2rem 0; font-size: 1.8rem">Вибір тарифу</h2>
+            <h2 style="margin: 2rem 0; font-size: 1.8rem">{{ t('plans.title') }}</h2>
 
             <div v-if="flash.success" class="success-message">{{ flash.success }}</div>
             <div v-if="flash.error" class="error-message">{{ flash.error }}</div>
 
             <div v-if="plans.length === 0" class="empty-plans">
-                Тарифи відсутні.
+                {{ t('plans.noPlans') }}
             </div>
 
             <div v-else class="plans-grid">
@@ -18,17 +18,17 @@
                 >
                     <h2 class="plan-name">
                         {{ plan.name }}
-                        <span v-if="plan.id === currentPlanId" class="current-tag">(Поточний)</span>
+                        <span v-if="plan.id === currentPlanId" class="current-tag">({{ t('plans.current') }})</span>
                     </h2>
                     <p class="plan-description">{{ plan.description }}</p>
-                    <p class="plan-price">Ціна: {{ plan.price }} USD</p>
+                    <p class="plan-price">{{ t('plans.price') }}: {{ plan.price }} USD</p>
 
                     <button
                         :disabled="plan.id === currentPlanId"
                         @click="handlePlanSelection(plan)"
                         class="btn-select"
                     >
-                        {{ plan.id === currentPlanId ? 'Вибрано' : 'Вибрати' }}
+                        {{ plan.id === currentPlanId ? t('plans.selected') : t('plans.select') }}
                     </button>
                 </div>
             </div>
@@ -40,6 +40,9 @@
 import AppLayout from '@/Layouts/AppLayout.vue'
 import { router, usePage } from '@inertiajs/vue3'
 import { computed } from 'vue'
+import { useI18n } from '@/lang/useI18n'
+
+const { t } = useI18n()
 
 const page = usePage()
 const plans = computed(() => page.props.plans || [])
@@ -47,27 +50,26 @@ const flash = computed(() => page.props.flash || {})
 const currentPlanId = computed(() => page.props.currentPlanId)
 
 /**
- * Обробка вибору тарифу
+ * Обработка выбора тарифа
  */
 function handlePlanSelection(plan) {
-    // Безкоштовний тариф — підтвердження переходу
+    // Бесплатный тариф — подтверждение перехода
     if (plan.name.toLowerCase() === 'free' || plan.price == 0) {
-        if (confirm('Ви дійсно хочете скасувати підписку та перейти на Free-тариф?')) {
+        if (confirm(t('plans.confirmFree'))) {
             router.post(route('plans.subscribe'), { plan_id: plan.id }, {
                 onSuccess: () => {
-                    // Оновлюємо дані користувача без повного перезавантаження
                     router.reload({ only: ['auth', 'currentPlanId', 'flash'] })
                 }
             })
         }
     } else {
-        // Перехід на сторінку оплати
         router.get(route('plans.payment', { plan: plan.id }))
     }
 }
 </script>
 
 <style scoped>
+/* стили оставляем без изменений */
 .plans-container {
     max-width: 900px;
     margin: 0 auto;
@@ -115,7 +117,7 @@ function handlePlanSelection(plan) {
 }
 
 .plan-name {
-    margin-bottom: 10px;
+    margin: 0 0 10px;
 }
 
 .current-tag {

@@ -1,13 +1,13 @@
 <template>
     <AppLayout>
         <div class="payment-container">
-            <h2 style="margin: 0; font-size: 1.8rem">Оплата тарифу: {{ plan.name }}</h2>
+            <h2 style="margin: 0; font-size: 1.8rem">{{ t('payment.title') }}: {{ plan.name }}</h2>
             <p class="plan-description">{{ plan.description }}</p>
-            <p class="plan-price">Ціна: {{ plan.price }} USD</p>
+            <p class="plan-price">{{ t('payment.price') }}: {{ plan.price }} USD</p>
 
             <form @submit.prevent="submitPayment" class="payment-form">
                 <div class="form-group">
-                    <label for="cardNumber">Номер картки</label>
+                    <label for="cardNumber">{{ t('payment.cardNumber') }}</label>
                     <input
                         id="cardNumber"
                         v-model="cardNumber"
@@ -16,13 +16,13 @@
                         maxlength="19"
                         pattern="[0-9\s]{19}"
                         required
-                        placeholder="1234 5678 9012 3456"
+                        :placeholder="t('payment.cardNumberPlaceholder')"
                         @input="formatCardNumber"
                     />
                 </div>
 
                 <div class="form-group half">
-                    <label for="expiryDate">Термін дії</label>
+                    <label for="expiryDate">{{ t('payment.expiryDate') }}</label>
                     <input
                         id="expiryDate"
                         v-model="expiryDate"
@@ -31,13 +31,13 @@
                         maxlength="5"
                         pattern="(0[1-9]|1[0-2])\/\d{2}"
                         required
-                        placeholder="MM/YY"
+                        :placeholder="t('payment.expiryDatePlaceholder')"
                         @input="formatExpiryDate"
                     />
                 </div>
 
                 <div class="form-group half">
-                    <label for="cvv">CVV</label>
+                    <label for="cvv">{{ t('payment.cvv') }}</label>
                     <input
                         id="cvv"
                         v-model="cvv"
@@ -46,13 +46,13 @@
                         maxlength="3"
                         pattern="\d{3}"
                         required
-                        placeholder="123"
+                        :placeholder="t('payment.cvvPlaceholder')"
                         @input="formatCVV"
                     />
                 </div>
 
                 <button type="submit" :disabled="processing" class="btn-pay">
-                    {{ processing ? 'Оплата...' : 'Оплатити' }}
+                    {{ processing ? t('payment.processing') : t('payment.pay') }}
                 </button>
             </form>
         </div>
@@ -63,6 +63,9 @@
 import AppLayout from '@/Layouts/AppLayout.vue'
 import { ref } from 'vue'
 import { router, usePage } from '@inertiajs/vue3'
+import { useI18n } from '@/lang/useI18n'
+
+const { t } = useI18n()
 
 const { props } = usePage()
 const plan = props.plan
@@ -72,34 +75,22 @@ const expiryDate = ref('')
 const cvv = ref('')
 const processing = ref(false)
 
-/**
- * Форматування номера картки (1234 5678 9012 3456)
- */
 function formatCardNumber(e) {
     let value = e.target.value.replace(/\D/g, '').slice(0, 16)
     value = value.replace(/(\d{4})(?=\d)/g, '$1 ')
     cardNumber.value = value
 }
 
-/**
- * Форматування терміну дії (MM/YY)
- */
 function formatExpiryDate(e) {
     let value = e.target.value.replace(/\D/g, '').slice(0, 4)
     if (value.length > 2) value = value.slice(0, 2) + '/' + value.slice(2)
     expiryDate.value = value
 }
 
-/**
- * Форматування CVV (3 цифри)
- */
 function formatCVV(e) {
     cvv.value = e.target.value.replace(/\D/g, '').slice(0, 3)
 }
 
-/**
- * Відправлення форми
- */
 function submitPayment() {
     processing.value = true
     router.post(
@@ -119,6 +110,7 @@ function submitPayment() {
 </script>
 
 <style scoped>
+/* Стили оставляем без изменений */
 .payment-container {
     max-width: 500px;
     margin: 60px auto;

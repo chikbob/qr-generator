@@ -1,32 +1,47 @@
 <template>
     <header class="app-header">
         <nav>
-            <Link href="/">Головна</Link>
-            <Link href="/generate">Генератор</Link>
-            <Link href="/scan">Сканер</Link>
+            <Link href="/">{{ t('header.home') }}</Link>
+            <Link href="/generate">{{ t('header.generate') }}</Link>
+            <Link href="/scan">{{ t('header.scan') }}</Link>
 
             <template v-if="user">
-                <Link href="/history">Історія</Link>
-                <Link href="/profile">Профіль</Link>
-                <Link href="/plans">Тарифи</Link>
-                <Link href="/contacts">Контакти</Link>
+                <Link href="/history">{{ t('header.history') }}</Link>
+                <Link href="/profile">{{ t('header.profile') }}</Link>
+                <Link href="/plans">{{ t('header.plans') }}</Link>
+                <Link href="/contacts">{{ t('header.contacts') }}</Link>
+
                 <form @submit.prevent="logout">
-                    <button type="submit" class="logout-btn">Вийти</button>
+                    <button type="submit" class="logout-btn">
+                        {{ t('header.logout') }}
+                    </button>
                 </form>
             </template>
 
-
             <template v-else>
-                <Link href="/login">Увійти</Link>
-                <Link href="/register">Реєстрація</Link>
+                <Link href="/login">{{ t('header.login') }}</Link>
+                <Link href="/register">{{ t('header.register') }}</Link>
             </template>
+
+            <!-- 🌍 Селектор языка -->
+            <select
+                class="lang-select"
+                v-model="currentLang"
+                @change="setLang(currentLang)"
+            >
+                <option value="ru">RU</option>
+                <option value="ua">UA</option>
+                <option value="en">EN</option>
+            </select>
         </nav>
     </header>
 </template>
 
 <script setup>
 import { useForm, usePage, Link } from '@inertiajs/vue3'
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
+
+const { t, setLang, currentLang } = inject('i18n')
 
 const page = usePage()
 const user = computed(() => page.props.auth?.user)
@@ -72,7 +87,6 @@ nav a.router-link-exact-active {
     background: #42b983;
 }
 
-/* Кнопка выхода */
 .logout-btn {
     background: #e74c3c;
     font-weight: 600;
@@ -87,11 +101,17 @@ nav a.router-link-exact-active {
     }
 }
 
-/* Новая ссылка обратной связи */
-.feedback-link {
-    background: #3498db;
-}
-.feedback-link:hover {
-    background: #2980b9;
+.lang-select {
+    background: #34495e;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-weight: 600;
+    cursor: pointer;
+
+    option {
+        color: #000;
+    }
 }
 </style>

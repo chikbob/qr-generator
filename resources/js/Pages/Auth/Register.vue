@@ -1,13 +1,13 @@
 <template>
     <AppLayout>
         <div class="auth-form">
-            <h2>Реєстрація</h2>
+            <h2>{{ t('register.title') }}</h2>
             <form @submit.prevent="register">
-                <input v-model="form.name" type="text" placeholder="Ім'я" required />
-                <input v-model="form.email" type="email" placeholder="Email" required />
-                <input v-model="form.password" type="password" placeholder="Пароль" required />
-                <input v-model="form.password_confirmation" type="password" placeholder="Підтвердити пароль" required />
-                <button type="submit">Зареєструватися</button>
+                <input v-model="form.name" type="text" :placeholder="t('register.namePlaceholder')" required />
+                <input v-model="form.email" type="email" :placeholder="t('register.emailPlaceholder')" required />
+                <input v-model="form.password" type="password" :placeholder="t('register.passwordPlaceholder')" required />
+                <input v-model="form.password_confirmation" type="password" :placeholder="t('register.passwordConfirmationPlaceholder')" required />
+                <button type="submit">{{ t('register.submitButton') }}</button>
             </form>
         </div>
     </AppLayout>
@@ -16,6 +16,9 @@
 <script setup>
 import { useForm } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
+import { useI18n } from '@/lang/useI18n'
+
+const { t } = useI18n()
 
 const form = useForm({
     name: '',
@@ -30,6 +33,7 @@ const register = () => {
 </script>
 
 <style scoped>
+/* Стили оставляем такие же, как в Login.vue */
 .auth-form {
     max-width: 400px;
     margin: 5rem auto;

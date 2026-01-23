@@ -1,25 +1,31 @@
 <template>
     <AppLayout>
         <div class="home-view">
-            <h1>Ласкаво просимо до Генератора QR-кодів</h1>
+            <h1>{{ t('home.title') }}</h1>
 
             <div class="features">
                 <div class="feature-card">
-                    <h3>Генератор QR-кодів</h3>
-                    <p>Створюйте QR-коди для тексту, URL, Wi-Fi та контактів</p>
-                    <a href="/generate" class="feature-link">Перейти</a>
+                    <h3>{{ t('home.generator.title') }}</h3>
+                    <p>{{ t('home.generator.text') }}</p>
+                    <a href="/generate" class="feature-link">
+                        {{ t('common.go') }}
+                    </a>
                 </div>
 
                 <div class="feature-card">
-                    <h3>Сканер QR-кодів</h3>
-                    <p>Скануйте QR-коди за допомогою камери пристрою</p>
-                    <a href="/scan" class="feature-link">Перейти</a>
+                    <h3>{{ t('home.scanner.title') }}</h3>
+                    <p>{{ t('home.scanner.text') }}</p>
+                    <a href="/scan" class="feature-link">
+                        {{ t('common.go') }}
+                    </a>
                 </div>
 
                 <div class="feature-card">
-                    <h3>Історія</h3>
-                    <p>Переглядайте історію створених QR-кодів</p>
-                    <a href="/history" class="feature-link">Перейти</a>
+                    <h3>{{ t('home.history.title') }}</h3>
+                    <p>{{ t('home.history.text') }}</p>
+                    <a href="/history" class="feature-link">
+                        {{ t('common.go') }}
+                    </a>
                 </div>
             </div>
         </div>
@@ -27,7 +33,10 @@
 </template>
 
 <script setup>
-import AppLayout from "@/Layouts/AppLayout.vue";
+import AppLayout from '@/Layouts/AppLayout.vue'
+import {useI18n} from '@/lang/useI18n'
+
+const {t} = useI18n()
 </script>
 
 <style scoped>
