@@ -94,7 +94,9 @@ export default {
         type: {
             text: 'Текст / URL',
             wifi: 'Wi-Fi',
+            contact: 'Контакт (vCard)',
         },
+
         textPlaceholder: 'Введите текст или ссылку',
         size: 'Размер',
         dynamic: 'Динамический QR',
@@ -105,6 +107,15 @@ export default {
             wpa: 'WPA / WPA2',
             wep: 'WEP',
             open: 'Открытая сеть',
+        },
+        contact: {
+            title: 'Контактные данные',
+            name: 'Имя',
+            phone: 'Телефон',
+            email: 'Email',
+            company: 'Компания',
+            website: 'Сайт',
+            address: 'Адрес',
         },
     },
 

@@ -94,7 +94,9 @@ export default {
         type: {
             text: 'Текст / URL',
             wifi: 'Wi-Fi',
+            contact: 'Контакт (vCard)',
         },
+
         textPlaceholder: 'Введіть текст або посилання',
         size: 'Розмір',
         dynamic: 'Динамічний QR',
@@ -106,7 +108,15 @@ export default {
             wep: 'WEP',
             open: 'Відкрита мережа',
         },
-
+        contact: {
+            title: 'Контактні дані',
+            name: "Ім'я",
+            phone: 'Телефон',
+            email: 'Email',
+            company: 'Компанія',
+            website: 'Сайт',
+            address: 'Адреса',
+        },
     },
 
     qrHistory: {

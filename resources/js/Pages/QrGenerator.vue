@@ -8,6 +8,8 @@
                 <select v-model="qrType">
                     <option value="text">{{ t('qrGenerator.type.text') }}</option>
                     <option value="wifi">{{ t('qrGenerator.type.wifi') }}</option>
+                    <option value="contact">{{ t('qrGenerator.type.contact') }}
+                    </option>
                 </select>
             </div>
 
@@ -40,6 +42,22 @@
                         <option value="WEP">{{ t('qrGenerator.wifi.wep') }}</option>
                         <option value="">{{ t('qrGenerator.wifi.open') }}</option>
                     </select>
+                </div>
+            </div>
+
+            <!-- CONTACT vCard 3.0 -->
+
+            <!-- CONTACT -->
+            <div v-if="qrType === 'contact'" class="input-container">
+                <div class="contact-form">
+                    <input type="text" v-model="qrData.contact.name" :placeholder="t('qrGenerator.contact.name')"/>
+                    <input type="tel" v-model="qrData.contact.phone" :placeholder="t('qrGenerator.contact.phone')"/>
+                    <input type="email" v-model="qrData.contact.email" :placeholder="t('qrGenerator.contact.email')"/>
+                    <input type="text" v-model="qrData.contact.company"
+                           :placeholder="t('qrGenerator.contact.company')"/>
+                    <input type="url" v-model="qrData.contact.website" :placeholder="t('qrGenerator.contact.website')"/>
+                    <input type="text" v-model="qrData.contact.address"
+                           :placeholder="t('qrGenerator.contact.address')"/>
                 </div>
             </div>
 
@@ -136,6 +154,14 @@ const qrData = ref({
         password: '',
         encryption: 'WPA',
     },
+    contact: {
+        name: '',
+        phone: '',
+        email: '',
+        company: '',
+        website: '',
+        address: '',
+    },
 })
 
 /* ✅ QR появляется ТОЛЬКО если есть реальные данные */
@@ -144,6 +170,26 @@ const qrContent = computed(() => {
         const {ssid, password, encryption} = qrData.value.wifi
         if (!ssid && !password) return ''
         return `WIFI:T:${encryption};S:${ssid};P:${password};;`
+    }
+
+    if (qrType.value === 'contact') {
+        const c = qrData.value.contact
+        const hasData = Object.values(c).some(v => v && v.trim())
+        if (!hasData) return ''
+
+        return [
+            'BEGIN:VCARD',
+            'VERSION:3.0',
+            c.name && `FN:${c.name}`,
+            c.company && `ORG:${c.company}`,
+            c.phone && `TEL:${c.phone}`,
+            c.email && `EMAIL:${c.email}`,
+            c.website && `URL:${c.website}`,
+            c.address && `ADR:;;${c.address}`,
+            'END:VCARD',
+        ]
+            .filter(Boolean)
+            .join('\n')
     }
 
     return qrData.value.text.trim()
@@ -347,5 +393,13 @@ input[type="color"]::-moz-color-swatch {
 
 input[type="range"] {
     accent-color: #42b983;
+}
+
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: $input-width;
 }
 </style>
