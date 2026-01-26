@@ -94,8 +94,13 @@ export default {
         type: {
             text: 'Текст / URL',
             wifi: 'Wi-Fi',
-            contact: 'Контакт (vCard)',
+            contact: 'Контакт',
             email: 'Email',
+            phone: 'Телефон',
+            sms: 'SMS',
+            geo: 'Геолокація',
+            event: 'Подія',
+            social: 'Соціальні мережі',
         },
 
         textPlaceholder: 'Введіть текст або посилання',
@@ -122,6 +127,34 @@ export default {
             to: 'Кому (Email)',
             subject: 'Тема листа',
             body: 'Текст листа',
+        },
+
+        phone: {
+            number: 'Номер телефону',
+        },
+
+        sms: {
+            number: 'Номер телефону',
+            message: 'Текст повідомлення',
+        },
+
+        geo: {
+            lat: 'Широта',
+            lng: 'Довгота',
+        },
+
+        event: {
+            title: 'Назва події',
+            start: 'Дата та час початку',
+            end: 'Дата та час завершення',
+            location: 'Місце проведення',
+        },
+
+        social: {
+            telegram: 'Посилання Telegram',
+            whatsapp: 'Посилання WhatsApp',
+            instagram: 'Посилання Instagram',
+            youtube: 'Посилання YouTube',
         },
     },
 

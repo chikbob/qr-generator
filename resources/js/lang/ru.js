@@ -94,8 +94,13 @@ export default {
         type: {
             text: 'Текст / URL',
             wifi: 'Wi-Fi',
-            contact: 'Контакт (vCard)',
-            email: 'Почта',
+            contact: 'Контакт',
+            email: 'Email',
+            phone: 'Телефон',
+            sms: 'SMS',
+            geo: 'Геолокация',
+            event: 'Событие',
+            social: 'Социальные сети',
         },
 
         textPlaceholder: 'Введите текст или ссылку',
@@ -122,6 +127,34 @@ export default {
             to: 'Кому (Email)',
             subject: 'Тема письма',
             body: 'Текст письма',
+        },
+
+        phone: {
+            number: 'Номер телефона',
+        },
+
+        sms: {
+            number: 'Номер телефона',
+            message: 'Текст сообщения',
+        },
+
+        geo: {
+            lat: 'Широта',
+            lng: 'Долгота',
+        },
+
+        event: {
+            title: 'Название события',
+            start: 'Дата и время начала',
+            end: 'Дата и время окончания',
+            location: 'Место проведения',
+        },
+
+        social: {
+            telegram: 'Telegram ссылка',
+            whatsapp: 'WhatsApp ссылка',
+            instagram: 'Instagram ссылка',
+            youtube: 'YouTube ссылка',
         },
     },
 

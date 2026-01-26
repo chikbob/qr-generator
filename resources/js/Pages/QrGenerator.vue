@@ -10,6 +10,8 @@
                     <option value="wifi">{{ t('qrGenerator.type.wifi') }}</option>
                     <option value="contact">{{ t('qrGenerator.type.contact') }}</option>
                     <option value="email">{{ t('qrGenerator.type.email') }}</option>
+                    <option value="phone">{{ t('qrGenerator.type.phone') }}</option>
+                    <option value="sms">{{ t('qrGenerator.type.sms') }}</option>
                 </select>
             </div>
 
@@ -78,6 +80,33 @@
                         rows="3"
                         v-model="qrData.email.body"
                         :placeholder="t('qrGenerator.email.body')"
+                    />
+                </div>
+            </div>
+
+            <!-- PHONE -->
+            <div v-if="qrType === 'phone'" class="input-container">
+                <div class="phone-form">
+                    <input
+                        type="tel"
+                        v-model="qrData.phone.number"
+                        :placeholder="t('qrGenerator.phone.number')"
+                    />
+                </div>
+            </div>
+
+            <!-- SMS -->
+            <div v-if="qrType === 'sms'" class="input-container">
+                <div class="sms-form">
+                    <input
+                        type="tel"
+                        v-model="qrData.sms.number"
+                        :placeholder="t('qrGenerator.sms.number')"
+                    />
+                    <textarea
+                        rows="3"
+                        v-model="qrData.sms.message"
+                        :placeholder="t('qrGenerator.sms.message')"
                     />
                 </div>
             </div>
@@ -170,30 +199,17 @@ const canUseDynamic = computed(() =>
 
 const qrData = ref({
     text: '',
-    wifi: {
-        ssid: '',
-        password: '',
-        encryption: 'WPA',
-    },
-    contact: {
-        name: '',
-        phone: '',
-        email: '',
-        company: '',
-        website: '',
-        address: '',
-    },
-    email: {
-        to: '',
-        subject: '',
-        body: '',
-    },
+    wifi: {ssid: '', password: '', encryption: 'WPA'},
+    contact: {name: '', phone: '', email: '', company: '', website: '', address: ''},
+    email: {to: '', subject: '', body: ''},
+    phone: {number: ''},
+    sms: {number: '', message: ''},
 })
 
 /* ✅ QR появляется ТОЛЬКО если есть реальные данные */
 const qrContent = computed(() => {
     if (qrType.value === 'wifi') {
-        const { ssid, password, encryption } = qrData.value.wifi
+        const {ssid, password, encryption} = qrData.value.wifi
         if (!ssid && !password) return ''
         return `WIFI:T:${encryption};S:${ssid};P:${password};;`
     }
@@ -217,7 +233,7 @@ const qrContent = computed(() => {
     }
 
     if (qrType.value === 'email') {
-        const { to, subject, body } = qrData.value.email
+        const {to, subject, body} = qrData.value.email
         if (!to) return ''
 
         const params = new URLSearchParams()
@@ -225,6 +241,16 @@ const qrContent = computed(() => {
         if (body) params.append('body', body)
 
         return `mailto:${to}${params.toString() ? '?' + params.toString() : ''}`
+    }
+
+    if (qrType.value === 'phone') {
+        return qrData.value.phone.number ? `tel:${qrData.value.phone.number}` : ''
+    }
+
+    if (qrType.value === 'sms') {
+        const {number, message} = qrData.value.sms
+        if (!number) return ''
+        return `sms:${number}?body=${encodeURIComponent(message)}`
     }
 
     return qrData.value.text.trim()
@@ -259,6 +285,18 @@ const saveToHistory = () => {
         is_dynamic: isDynamic.value,
     })
 }
+
+watch(qrType, () => {
+    Object.keys(qrData.value).forEach(key => {
+        if (typeof qrData.value[key] === 'string') {
+            qrData.value[key] = ''
+        } else {
+            Object.keys(qrData.value[key]).forEach(k => {
+                qrData.value[key][k] = ''
+            })
+        }
+    })
+})
 </script>
 
 <style scoped lang="scss">
@@ -446,4 +484,12 @@ input[type="range"] {
     max-width: $input-width;
 }
 
+.phone-form,
+.sms-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: $input-width;
+}
 </style>

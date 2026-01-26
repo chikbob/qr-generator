@@ -94,8 +94,13 @@ export default {
         type: {
             text: 'Text / URL',
             wifi: 'Wi-Fi',
-            contact: 'Contact (vCard)',
+            contact: 'Contact',
             email: 'Email',
+            phone: 'Phone',
+            sms: 'SMS',
+            geo: 'Geolocation',
+            event: 'Event',
+            social: 'Social networks',
         },
 
         textPlaceholder: 'Enter text or URL',
@@ -122,6 +127,33 @@ export default {
             to: 'Recipient Email',
             subject: 'Email Subject',
             body: 'Email Body',
+        },
+        phone: {
+            number: 'Phone number',
+        },
+
+        sms: {
+            number: 'Phone number',
+            message: 'Message text',
+        },
+
+        geo: {
+            lat: 'Latitude',
+            lng: 'Longitude',
+        },
+
+        event: {
+            title: 'Event title',
+            start: 'Start date & time',
+            end: 'End date & time',
+            location: 'Location',
+        },
+
+        social: {
+            telegram: 'Telegram link',
+            whatsapp: 'WhatsApp link',
+            instagram: 'Instagram link',
+            youtube: 'YouTube link',
         },
     },
 
