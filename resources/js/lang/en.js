@@ -102,6 +102,7 @@ export default {
             event: 'Event',
             social: 'Social networks',
             location: "Location",
+            pdf: "PDF file",
         },
 
         textPlaceholder: 'Enter text or URL',
@@ -167,7 +168,14 @@ export default {
             longitude: "Longitude",
             address: "Address",
             routeButton: "Get directions"
-        }
+        },
+
+        pdf: {
+            selectPlaceholder: "Select document",
+            menu: "Restaurant menu",
+            price: "Price list",
+            instructions: "Instructions"
+        },
     },
 
     qrHistory: {

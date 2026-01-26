@@ -13,6 +13,7 @@
                     <option value="phone">{{ t('qrGenerator.type.phone') }}</option>
                     <option value="sms">{{ t('qrGenerator.type.sms') }}</option>
                     <option value="location">{{ t('qrGenerator.type.location') }}</option>
+                    <option value="pdf">{{ t('qrGenerator.type.pdf') }}</option>
                 </select>
             </div>
 
@@ -128,6 +129,15 @@
                 </div>
             </div>
 
+            <!-- PDF -->
+            <div v-if="qrType === 'pdf'" class="input-container">
+                <input
+                    type="file"
+                    accept="application/pdf"
+                    @change="onPdfSelected"
+                />
+                <div v-if="pdfFileName">{{ pdfFileName }}</div>
+            </div>
 
             <!-- QR RESULT -->
             <div v-if="qrContent" class="qr-container">
@@ -215,6 +225,44 @@ const canUseDynamic = computed(() =>
     ['Pro', 'Enterprise'].includes(userPlan.value)
 )
 
+const pdfFile = ref(null)
+const pdfFileName = ref('')
+const pdfFileUrl = ref('')
+
+const uploadPdfFile = async (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response = await fetch('/api/upload-pdf', {
+        method: 'POST',
+        body: formData
+    })
+
+    if (!response.ok) throw new Error('Ошибка загрузки')
+
+    const data = await response.json()
+    return data.url // ссылка на загруженный файл
+}
+
+const onPdfSelected = async (event) => {
+    const file = event.target.files[0]
+    if (!file) return
+    if (file.type !== 'application/pdf') {
+        alert('Пожалуйста, выберите PDF файл')
+        event.target.value = ''
+        return
+    }
+
+    try {
+        pdfFileName.value = file.name
+        pdfFileUrl.value = await uploadPdfFile(file)
+    } catch (e) {
+        alert('Ошибка при загрузке файла')
+        pdfFileName.value = ''
+        pdfFileUrl.value = ''
+    }
+}
+
 const qrData = ref({
     text: '',
     wifi: {ssid: '', password: '', encryption: 'WPA'},
@@ -222,7 +270,8 @@ const qrData = ref({
     email: {to: '', subject: '', body: ''},
     phone: {number: ''},
     sms: {number: '', message: ''},
-    location: {address: '', mapProvider: ''}
+    location: {address: '', mapProvider: ''},
+    pdf: {document: ''}
 })
 
 /* ✅ QR появляется ТОЛЬКО если есть реальные данные */
@@ -286,6 +335,10 @@ const qrContent = computed(() => {
         }
     }
 
+    if (qrType.value === 'pdf') {
+        if (!pdfFileUrl.value) return ''
+        return pdfFileUrl.value
+    }
 
     return qrData.value.text.trim()
 })
@@ -339,7 +392,17 @@ watch(qrType, () => {
             })
         }
     })
+    if (qrType.value !== 'pdf') {
+        // Сбрасываем pdf данные при смене типа
+        pdfFile.value = null
+        pdfFileName.value = ''
+        if (pdfFileUrl.value) {
+            URL.revokeObjectURL(pdfFileUrl.value)
+            pdfFileUrl.value = ''
+        }
+    }
 })
+
 </script>
 
 <style scoped lang="scss">

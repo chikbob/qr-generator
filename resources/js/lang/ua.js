@@ -102,6 +102,7 @@ export default {
             event: 'Подія',
             social: 'Соціальні мережі',
             location: "Локація",
+            pdf: "PDF файл",
         },
 
         textPlaceholder: 'Введіть текст або посилання',
@@ -168,7 +169,14 @@ export default {
             longitude: "Довгота (longitude)",
             address: "Адреса",
             routeButton: "Прокласти маршрут"
-        }
+        },
+
+        pdf: {
+            selectPlaceholder: "Виберіть документ",
+            menu: "Меню ресторану",
+            price: "Прайс",
+            instructions: "Інструкція"
+        },
     },
 
     qrHistory: {
