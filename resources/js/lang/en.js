@@ -101,6 +101,7 @@ export default {
             geo: 'Geolocation',
             event: 'Event',
             social: 'Social networks',
+            location: "Location",
         },
 
         textPlaceholder: 'Enter text or URL',
@@ -155,6 +156,18 @@ export default {
             instagram: 'Instagram link',
             youtube: 'YouTube link',
         },
+
+        location: {
+            mapProviders: {
+                google: "Google Maps",
+                yandex: "Yandex Maps",
+                placeholder: "Select map"
+            },
+            latitude: "Latitude",
+            longitude: "Longitude",
+            address: "Address",
+            routeButton: "Get directions"
+        }
     },
 
     qrHistory: {

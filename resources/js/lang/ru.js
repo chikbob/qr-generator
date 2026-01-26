@@ -101,6 +101,7 @@ export default {
             geo: 'Геолокация',
             event: 'Событие',
             social: 'Социальные сети',
+            location: "Локация",
         },
 
         textPlaceholder: 'Введите текст или ссылку',
@@ -156,6 +157,18 @@ export default {
             instagram: 'Instagram ссылка',
             youtube: 'YouTube ссылка',
         },
+
+        location: {
+            mapProviders: {
+                google: "Google Maps",
+                yandex: "Yandex Maps",
+                placeholder: "Выберите карту"
+            },
+            latitude: "Широта (latitude)",
+            longitude: "Долгота (longitude)",
+            address: "Адрес",
+            routeButton: "Проложить маршрут"
+        }
     },
 
     qrHistory: {

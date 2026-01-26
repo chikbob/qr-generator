@@ -101,6 +101,7 @@ export default {
             geo: 'Геолокація',
             event: 'Подія',
             social: 'Соціальні мережі',
+            location: "Локація",
         },
 
         textPlaceholder: 'Введіть текст або посилання',
@@ -156,6 +157,18 @@ export default {
             instagram: 'Посилання Instagram',
             youtube: 'Посилання YouTube',
         },
+
+        location: {
+            mapProviders: {
+                google: "Google Maps",
+                yandex: "Yandex Maps",
+                placeholder: "Оберіть карту"
+            },
+            latitude: "Широта (latitude)",
+            longitude: "Довгота (longitude)",
+            address: "Адреса",
+            routeButton: "Прокласти маршрут"
+        }
     },
 
     qrHistory: {

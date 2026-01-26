@@ -12,6 +12,7 @@
                     <option value="email">{{ t('qrGenerator.type.email') }}</option>
                     <option value="phone">{{ t('qrGenerator.type.phone') }}</option>
                     <option value="sms">{{ t('qrGenerator.type.sms') }}</option>
+                    <option value="location">{{ t('qrGenerator.type.location') }}</option>
                 </select>
             </div>
 
@@ -111,6 +112,23 @@
                 </div>
             </div>
 
+            <!-- LOCATION -->
+            <div v-if="qrType === 'location'" class="input-container">
+                <div class="location-form">
+                    <input
+                        type="text"
+                        v-model="qrData.location.address"
+                        :placeholder="t('qrGenerator.location.address')"
+                    />
+                    <select v-model="qrData.location.mapProvider">
+                        <option disabled value="">{{ t('qrGenerator.location.mapProviders.placeholder') }}</option>
+                        <option value="google">{{ t('qrGenerator.location.mapProviders.google') }}</option>
+                        <option value="yandex">{{ t('qrGenerator.location.mapProviders.yandex') }}</option>
+                    </select>
+                </div>
+            </div>
+
+
             <!-- QR RESULT -->
             <div v-if="qrContent" class="qr-container">
                 <div class="qr-wrapper">
@@ -204,6 +222,7 @@ const qrData = ref({
     email: {to: '', subject: '', body: ''},
     phone: {number: ''},
     sms: {number: '', message: ''},
+    location: {address: '', mapProvider: ''}
 })
 
 /* ✅ QR появляется ТОЛЬКО если есть реальные данные */
@@ -253,8 +272,32 @@ const qrContent = computed(() => {
         return `sms:${number}?body=${encodeURIComponent(message)}`
     }
 
+    if (qrType.value === 'location') {
+        const address = qrData.value.location.address.trim()
+        if (!address) return ''
+
+        const encodedAddress = encodeURIComponent(address)
+        if (qrData.value.location.mapProvider === 'yandex') {
+            // Ссылка для Yandex Maps
+            return `https://yandex.ru/maps/?text=${encodedAddress}`
+        } else {
+            // По умолчанию Google Maps
+            return `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`
+        }
+    }
+
+
     return qrData.value.text.trim()
 })
+
+const openRoute = () => {
+    const {latitude, longitude} = qrData.value.location
+    if (!latitude || !longitude) return alert('Введите координаты')
+
+    // Открываем Google Maps с маршрутом из текущего местоположения к координатам
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(latitude)},${encodeURIComponent(longitude)}`
+    window.open(url, '_blank')
+}
 
 const generateQR = async () => {
     if (!qrCanvas.value || !qrContent.value) return
@@ -492,4 +535,28 @@ input[type="range"] {
     width: 100%;
     max-width: $input-width;
 }
+
+.location-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: $input-width;
+}
+
+.route-btn {
+    padding: 10px 22px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    background-color: #42b983;
+    color: white;
+    transition: background-color 0.2s;
+
+    &:hover {
+        background-color: #368a6e;
+    }
+}
+
 </style>
