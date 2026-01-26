@@ -95,6 +95,7 @@ export default {
             text: 'Текст / URL',
             wifi: 'Wi-Fi',
             contact: 'Контакт (vCard)',
+            email: 'Email',
         },
 
         textPlaceholder: 'Введіть текст або посилання',
@@ -116,6 +117,11 @@ export default {
             company: 'Компанія',
             website: 'Сайт',
             address: 'Адреса',
+        },
+        email: {
+            to: 'Кому (Email)',
+            subject: 'Тема листа',
+            body: 'Текст листа',
         },
     },
 

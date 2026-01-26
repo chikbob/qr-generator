@@ -8,8 +8,8 @@
                 <select v-model="qrType">
                     <option value="text">{{ t('qrGenerator.type.text') }}</option>
                     <option value="wifi">{{ t('qrGenerator.type.wifi') }}</option>
-                    <option value="contact">{{ t('qrGenerator.type.contact') }}
-                    </option>
+                    <option value="contact">{{ t('qrGenerator.type.contact') }}</option>
+                    <option value="email">{{ t('qrGenerator.type.email') }}</option>
                 </select>
             </div>
 
@@ -45,8 +45,6 @@
                 </div>
             </div>
 
-            <!-- CONTACT vCard 3.0 -->
-
             <!-- CONTACT -->
             <div v-if="qrType === 'contact'" class="input-container">
                 <div class="contact-form">
@@ -58,6 +56,29 @@
                     <input type="url" v-model="qrData.contact.website" :placeholder="t('qrGenerator.contact.website')"/>
                     <input type="text" v-model="qrData.contact.address"
                            :placeholder="t('qrGenerator.contact.address')"/>
+                </div>
+            </div>
+
+            <!-- EMAIL -->
+            <div v-if="qrType === 'email'" class="input-container">
+                <div class="email-form">
+                    <input
+                        type="email"
+                        v-model="qrData.email.to"
+                        :placeholder="t('qrGenerator.email.to')"
+                    />
+
+                    <input
+                        type="text"
+                        v-model="qrData.email.subject"
+                        :placeholder="t('qrGenerator.email.subject')"
+                    />
+
+                    <textarea
+                        rows="3"
+                        v-model="qrData.email.body"
+                        :placeholder="t('qrGenerator.email.body')"
+                    />
                 </div>
             </div>
 
@@ -162,12 +183,17 @@ const qrData = ref({
         website: '',
         address: '',
     },
+    email: {
+        to: '',
+        subject: '',
+        body: '',
+    },
 })
 
 /* ✅ QR появляется ТОЛЬКО если есть реальные данные */
 const qrContent = computed(() => {
     if (qrType.value === 'wifi') {
-        const {ssid, password, encryption} = qrData.value.wifi
+        const { ssid, password, encryption } = qrData.value.wifi
         if (!ssid && !password) return ''
         return `WIFI:T:${encryption};S:${ssid};P:${password};;`
     }
@@ -187,9 +213,18 @@ const qrContent = computed(() => {
             c.website && `URL:${c.website}`,
             c.address && `ADR:;;${c.address}`,
             'END:VCARD',
-        ]
-            .filter(Boolean)
-            .join('\n')
+        ].filter(Boolean).join('\n')
+    }
+
+    if (qrType.value === 'email') {
+        const { to, subject, body } = qrData.value.email
+        if (!to) return ''
+
+        const params = new URLSearchParams()
+        if (subject) params.append('subject', subject)
+        if (body) params.append('body', body)
+
+        return `mailto:${to}${params.toString() ? '?' + params.toString() : ''}`
     }
 
     return qrData.value.text.trim()
@@ -402,4 +437,13 @@ input[type="range"] {
     width: 100%;
     max-width: $input-width;
 }
+
+.email-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: $input-width;
+}
+
 </style>

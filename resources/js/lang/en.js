@@ -95,6 +95,7 @@ export default {
             text: 'Text / URL',
             wifi: 'Wi-Fi',
             contact: 'Contact (vCard)',
+            email: 'Email',
         },
 
         textPlaceholder: 'Enter text or URL',
@@ -116,6 +117,11 @@ export default {
             company: 'Company',
             website: 'Website',
             address: 'Address',
+        },
+        email: {
+            to: 'Recipient Email',
+            subject: 'Email Subject',
+            body: 'Email Body',
         },
     },
 
