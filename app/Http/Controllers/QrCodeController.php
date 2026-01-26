@@ -37,6 +37,7 @@ class QrCodeController extends Controller
         $codes = $query->get()->map(fn($code) => [
             'id' => $code->id,
             'content' => $code->content,
+            'type' => $code->type,
             'image_path' => asset($code->image_path),
             'size' => $code->size,
             'color_dark' => $code->color_dark,

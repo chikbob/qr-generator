@@ -187,7 +187,7 @@
                 </div>
 
                 <div class="action-buttons">
-                    <button class="btn save" @click="saveToHistory">
+                    <button type="button" class="btn save" @click="saveToHistory">
                         {{ t('qrGenerator.save') }}
                     </button>
                 </div>
@@ -327,10 +327,8 @@ const qrContent = computed(() => {
 
         const encodedAddress = encodeURIComponent(address)
         if (qrData.value.location.mapProvider === 'yandex') {
-            // Ссылка для Yandex Maps
             return `https://yandex.ru/maps/?text=${encodedAddress}`
         } else {
-            // По умолчанию Google Maps
             return `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`
         }
     }
@@ -340,7 +338,14 @@ const qrContent = computed(() => {
         return pdfFileUrl.value
     }
 
-    return qrData.value.text.trim()
+    // Вот здесь добавляем проверку для текстового типа
+    if (qrType.value === 'text') {
+        const text = qrData.value.text.trim()
+        if (!text) return ''
+        return text
+    }
+
+    return ''
 })
 
 const openRoute = () => {
@@ -370,17 +375,32 @@ const generateQR = async () => {
 
 watch([qrContent, size, colorDark, colorLight], generateQR)
 
-const saveToHistory = () => {
-    router.post('/qr', {
-        type: qrType.value,
-        content: qrContent.value,
-        payload: qrData.value[qrType.value] ?? null,
-        size: size.value,
-        color_dark: colorDark.value,
-        color_light: colorLight.value,
-        is_dynamic: isDynamic.value,
-    })
+const saveToHistory = async () => {
+    const payloadData = qrType.value === 'text'
+        ? {text: qrData.value.text}
+        : qrData.value[qrType.value] ?? null
+
+    if (!qrContent.value) {
+        alert('Нет данных для генерации QR')
+        return
+    }
+
+    try {
+        await router.post('/qr', {
+            type: qrType.value,
+            content: qrContent.value,
+            payload: payloadData,
+            size: size.value,
+            color_dark: colorDark.value,
+            color_light: colorLight.value,
+            is_dynamic: isDynamic.value,
+        })
+    } catch (error) {
+        console.error('Ошибка сохранения QR:', error)
+        alert('Ошибка при сохранении QR. Проверьте консоль.')
+    }
 }
+
 
 watch(qrType, () => {
     Object.keys(qrData.value).forEach(key => {
