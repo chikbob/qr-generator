@@ -72,28 +72,33 @@ class QrCodeController extends Controller
     {
         $user = auth()->user();
         $planName = $user->plan?->name ?? 'Free';
+
         if ($request->boolean('is_dynamic') && !in_array($planName, ['Pro', 'Enterprise'])) {
-            return redirect()->route('history')->with('error', 'Динамічні QR-коди доступні лише для користувачів з планом Pro або Enterprise.');
+            return redirect()->route('history')
+                ->with('error', 'Динамічні QR-коди доступні лише для Pro або Enterprise.');
         }
 
         $data = $request->validate([
+            'type' => 'required|string',
             'content' => 'required|string|max:500',
+            'payload' => 'nullable|array',
             'size' => 'integer|min:100|max:800',
             'color_dark' => 'string',
             'color_light' => 'string',
             'is_dynamic' => 'boolean',
         ]);
 
-        $folder = public_path('qr_codes');
-        if (!is_dir($folder)) mkdir($folder, 0777, true);
-
-        $fileName = 'qr-' . time() . '.png';
-        $path = 'qr_codes/' . $fileName;
         $slug = \Str::uuid()->toString();
 
         $finalContent = $data['is_dynamic']
             ? url('/r/' . $slug)
             : $data['content'];
+
+        $folder = public_path('qr_codes');
+        if (!is_dir($folder)) mkdir($folder, 0777, true);
+
+        $fileName = 'qr-' . time() . '.png';
+        $path = 'qr_codes/' . $fileName;
 
         \SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')
             ->encoding('UTF-8')
@@ -104,14 +109,15 @@ class QrCodeController extends Controller
 
         QrCode::create([
             'user_id' => $user->id,
+            'type' => $data['type'],
             'content' => $data['content'],
+            'payload' => $data['payload'] ?? null,
             'image_path' => $path,
             'size' => $data['size'],
             'color_dark' => $data['color_dark'],
             'color_light' => $data['color_light'],
             'is_dynamic' => $data['is_dynamic'] ?? false,
-            'slug' => $slug,
-            'redirect_uuid' => $data['is_dynamic'] ? $slug : null,
+            'slug' => $data['is_dynamic'] ? $slug : null,
         ]);
 
         return redirect()->route('history')->with('success', 'QR-код збережено!');

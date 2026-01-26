@@ -88,6 +88,25 @@ export default {
         placeholderEmpty: 'Введіть текст вище, щоб згенерувати QR-код',
         errorGenerate: 'Помилка генерації QR-коду:',
         errorGenerateSVG: 'Помилка генерації SVG:',
+        colorDark: 'Темний відтінок',
+        colorLight: 'Світлий відтінок',
+
+        type: {
+            text: 'Текст / URL',
+            wifi: 'Wi-Fi',
+        },
+        textPlaceholder: 'Введіть текст або посилання',
+        size: 'Розмір',
+        dynamic: 'Динамічний QR',
+        save: 'Зберегти',
+        wifi: {
+            ssid: 'Назва мережі (SSID)',
+            password: 'Пароль',
+            wpa: 'WPA / WPA2',
+            wep: 'WEP',
+            open: 'Відкрита мережа',
+        },
+
     },
 
     qrHistory: {

@@ -88,6 +88,24 @@ export default {
         placeholderEmpty: 'Enter text above to generate QR code',
         errorGenerate: 'Error generating QR code:',
         errorGenerateSVG: 'Error generating SVG:',
+        colorDark: 'Dark shade',
+        colorLight: 'Light shade',
+
+        type: {
+            text: 'Text / URL',
+            wifi: 'Wi-Fi',
+        },
+        textPlaceholder: 'Enter text or URL',
+        size: 'Size',
+        dynamic: 'Dynamic QR',
+        save: 'Save',
+        wifi: {
+            ssid: 'Network name (SSID)',
+            password: 'Password',
+            wpa: 'WPA / WPA2',
+            wep: 'WEP',
+            open: 'Open network',
+        },
     },
 
     qrHistory: {
@@ -247,7 +265,7 @@ export default {
         email: 'Email',
         phone: 'Phone',
         address: 'Address',
-        addressValue: 'Kyiv, Example Street, 1',
+        addressValue: 'New York, Example Street, 1',
         number: '+1 (111) 999-99-99',
 
         feedback: {

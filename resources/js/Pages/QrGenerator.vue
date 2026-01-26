@@ -1,229 +1,241 @@
 <template>
     <AppLayout>
         <div class="qr-generator">
-            <h2 style="margin: 2rem 0; font-size: 1.8rem">{{ t('qrGenerator.title') }}</h2>
+            <h1>{{ t('qrGenerator.title') }}</h1>
 
+            <!-- TYPE -->
             <div class="input-container">
+                <select v-model="qrType">
+                    <option value="text">{{ t('qrGenerator.type.text') }}</option>
+                    <option value="wifi">{{ t('qrGenerator.type.wifi') }}</option>
+                </select>
+            </div>
+
+            <!-- TEXT -->
+            <div v-if="qrType === 'text'" class="input-container">
                 <textarea
-                    v-model="inputText"
-                    @input="handleInput"
-                    :placeholder="t('qrGenerator.placeholder')"
+                    v-model="qrData.text"
                     rows="4"
-                    :class="{ 'error': showWarning }"
-                ></textarea>
-                <div v-if="showWarning" class="warning-message">
-                    {{ t('qrGenerator.warning') }}
-                </div>
-                <div class="char-count">
-                    {{ t('qrGenerator.characters') }}: {{ inputText.length }} / 500
+                    :placeholder="t('qrGenerator.textPlaceholder')"
+                />
+            </div>
+
+            <!-- WIFI -->
+            <div v-if="qrType === 'wifi'" class="input-container">
+                <div class="wifi-form">
+                    <input
+                        type="text"
+                        v-model="qrData.wifi.ssid"
+                        :placeholder="t('qrGenerator.wifi.ssid')"
+                    />
+
+                    <input
+                        type="password"
+                        v-model="qrData.wifi.password"
+                        :placeholder="t('qrGenerator.wifi.password')"
+                    />
+
+                    <select v-model="qrData.wifi.encryption">
+                        <option value="WPA">{{ t('qrGenerator.wifi.wpa') }}</option>
+                        <option value="WEP">{{ t('qrGenerator.wifi.wep') }}</option>
+                        <option value="">{{ t('qrGenerator.wifi.open') }}</option>
+                    </select>
                 </div>
             </div>
 
-            <div class="qr-container" v-if="inputText">
-                <div class="qr-wrapper" :style="{ maxWidth: size + 'px' }">
-                    <canvas ref="qrCanvas" class="qr-code"></canvas>
+            <!-- QR RESULT -->
+            <div v-if="qrContent" class="qr-container">
+                <div class="qr-wrapper">
+                    <canvas ref="qrCanvas"/>
                 </div>
 
                 <div class="controls">
-                    <label>
-                        {{ t('qrGenerator.sizeLabel') }}:
-                        <input type="range" v-model="size" min="100" max="500" />
-                        {{ size }}px
-                    </label>
+                    <div class="size-control">
+                        <span>{{ t('qrGenerator.size') }}</span>
+
+                        <input
+                            type="range"
+                            v-model="size"
+                            min="100"
+                            max="500"
+                            step="10"
+                        />
+
+                        <span class="size-value">{{ size }} px</span>
+                    </div>
 
                     <div class="color-controls">
                         <label>
-                            {{ t('qrGenerator.colorLabel') }}:
-                            <input type="color" v-model="colorDark" @input="generateQR" />
+                            {{ t('qrGenerator.colorDark') }}
+                            <input type="color" v-model="colorDark"/>
                         </label>
+
                         <label>
-                            {{ t('qrGenerator.backgroundLabel') }}:
-                            <input type="color" v-model="colorLight" @input="generateQR" />
+                            {{ t('qrGenerator.colorLight') }}
+                            <input type="color" v-model="colorLight"/>
                         </label>
                     </div>
 
-                    <div class="checkbox">
-                        <label v-if="canUseDynamic">
-                            <input type="checkbox" v-model="isDynamic" />
-                            {{ t('qrGenerator.dynamicLabel') }}
-                        </label>
-                        <p v-else class="pro-hint">
-                            🔒 {{ t('qrGenerator.dynamicProHint') }}
-                        </p>
-                    </div>
+                    <label class="checkbox">
+                        <input
+                            type="checkbox"
+                            v-model="isDynamic"
+                            :disabled="!canUseDynamic"
+                        />
+                        {{ t('qrGenerator.dynamic') }}
+                    </label>
 
-                    <div class="action-buttons">
-                        <button @click="downloadQR" class="download-btn">
-                            {{ t('qrGenerator.downloadPNG') }}
-                        </button>
-                        <button @click="downloadSVG" class="download-btn secondary">
-                            {{ t('qrGenerator.downloadSVG') }}
-                        </button>
-                        <button @click="saveToHistory" class="download-btn save-btn">
-                            {{ t('qrGenerator.saveHistory') }}
-                        </button>
-                    </div>
+                    <p v-if="!canUseDynamic" class="pro-hint">
+                        {{ t('qrGenerator.dynamicProHint') }}
+                    </p>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn save" @click="saveToHistory">
+                        {{ t('qrGenerator.save') }}
+                    </button>
                 </div>
             </div>
 
             <div v-else class="placeholder">
-                {{ t('qrGenerator.placeholderEmpty') }}
+                {{ t('qrGenerator.placeholder') }}
             </div>
         </div>
     </AppLayout>
 </template>
 
 <script setup>
-import { ref, watch, onMounted, computed } from 'vue'
+import {ref, computed, watch} from 'vue'
 import QRCode from 'qrcode'
-import { router, usePage } from '@inertiajs/vue3'
+import {router, usePage} from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
-import { useI18n } from '@/lang/useI18n'
+import {useI18n} from '@/lang/useI18n'
 
-const { t } = useI18n()
-
+const {t} = useI18n()
 const page = usePage()
-const userPlan = computed(() => page.props.auth?.user?.plan || 'Free')
 
-const inputText = ref('')
-const size = ref(200)
 const qrCanvas = ref(null)
+
+const qrType = ref('text')
+const size = ref(200)
+
 const colorDark = ref('#000000')
 const colorLight = ref('#ffffff')
+
 const isDynamic = ref(false)
 
-const MAX_TEXT_LENGTH = 500
-const WARNING_THRESHOLD = 300
+const userPlan = computed(() => page.props.auth?.user?.plan ?? 'Free')
+const canUseDynamic = computed(() =>
+    ['Pro', 'Enterprise'].includes(userPlan.value)
+)
 
-const showWarning = computed(() => inputText.value.length > WARNING_THRESHOLD)
-
-// Можно ли использовать динамические QR-коды
-const canUseDynamic = computed(() => ['Pro', 'Enterprise'].includes(userPlan.value))
-
-watch(isDynamic, (val) => {
-    if (val && !canUseDynamic.value) {
-        alert(t('qrGenerator.dynamicAlert'))
-        isDynamic.value = false
-    }
+const qrData = ref({
+    text: '',
+    wifi: {
+        ssid: '',
+        password: '',
+        encryption: 'WPA',
+    },
 })
 
-const saveToHistory = () => {
-    if (isDynamic.value && !canUseDynamic.value) {
-        alert(t('qrGenerator.dynamicAlert'))
-        isDynamic.value = false
-        return
+/* ✅ QR появляется ТОЛЬКО если есть реальные данные */
+const qrContent = computed(() => {
+    if (qrType.value === 'wifi') {
+        const {ssid, password, encryption} = qrData.value.wifi
+        if (!ssid && !password) return ''
+        return `WIFI:T:${encryption};S:${ssid};P:${password};;`
     }
 
+    return qrData.value.text.trim()
+})
+
+const generateQR = async () => {
+    if (!qrCanvas.value || !qrContent.value) return
+
+    const CANVAS_SIZE = 260 // 👈 визуальный размер QR
+
+    await QRCode.toCanvas(qrCanvas.value, qrContent.value, {
+        width: CANVAS_SIZE,
+        scale: size.value / 100, // 👈 масштаб вместо resize
+        color: {
+            dark: colorDark.value,
+            light: colorLight.value,
+        },
+    })
+
+}
+
+watch([qrContent, size, colorDark, colorLight], generateQR)
+
+const saveToHistory = () => {
     router.post('/qr', {
-        content: inputText.value,
+        type: qrType.value,
+        content: qrContent.value,
+        payload: qrData.value[qrType.value] ?? null,
         size: size.value,
         color_dark: colorDark.value,
         color_light: colorLight.value,
         is_dynamic: isDynamic.value,
     })
 }
-
-const generateQR = async () => {
-    if (!inputText.value || !qrCanvas.value) return
-    try {
-        await QRCode.toCanvas(qrCanvas.value, inputText.value, {
-            width: Math.min(size.value, 800),
-            margin: 2,
-            color: { dark: colorDark.value, light: colorLight.value },
-        })
-    } catch (err) {
-        console.error(t('qrGenerator.errorGenerate'), err)
-    }
-}
-
-const downloadQR = () => {
-    if (!qrCanvas.value) return
-    const link = document.createElement('a')
-    link.href = qrCanvas.value.toDataURL('image/png')
-    link.download = `qr-code-${Date.now()}.png`
-    link.click()
-}
-
-const downloadSVG = async () => {
-    if (!inputText.value) return
-    try {
-        const svg = await QRCode.toString(inputText.value, {
-            type: 'svg',
-            color: { dark: colorDark.value, light: colorLight.value },
-        })
-        const blob = new Blob([svg], { type: 'image/svg+xml' })
-        const url = URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = `qr-code-${Date.now()}.svg`
-        link.click()
-        URL.revokeObjectURL(url)
-    } catch (err) {
-        console.error(t('qrGenerator.errorGenerateSVG'), err)
-    }
-}
-
-const handleInput = async () => {
-    if (inputText.value.length > MAX_TEXT_LENGTH) {
-        inputText.value = inputText.value.substring(0, MAX_TEXT_LENGTH)
-    }
-    await generateQR()
-}
-
-watch(size, generateQR)
-onMounted(() => inputText.value && generateQR())
 </script>
 
-<style scoped>
-/* Стили оставь без изменений */
+<style scoped lang="scss">
 .qr-generator {
     max-width: 600px;
     margin: 2rem auto;
-    padding: 0 1.5rem 1.5rem;
-    background: #fff;
-    border-radius: 8px;
+    padding: 1.5rem;
     text-align: center;
     color: #2c3e50;
-}
 
-h1 {
-    font-weight: 700;
-    margin-bottom: 1.5rem;
-    color: #34495e;
+    h1 {
+        margin-bottom: 1.5rem;
+        font-weight: 700;
+    }
 }
 
 .input-container {
-    position: relative;
-    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+$input-width: 420px;
+
+textarea,
+input,
+select {
+    max-width: $input-width;
+    padding: 12px;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: 1.5px solid #ccc;
+    font-family: inherit;
+    transition: 0.2s;
+
+    &:focus {
+        outline: none;
+        border-color: #42b983;
+        box-shadow: 0 0 0 2px rgba(66, 185, 131, 0.15);
+    }
 }
 
 textarea {
-    width: 100%;
-    padding: 12px;
-    border: 1.5px solid #ccc;
-    border-radius: 6px;
-    font-size: 1rem;
-    font-family: inherit;
     resize: vertical;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-textarea.error {
-    border-color: #ff9800;
+select {
+    appearance: none;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center / 14px;
+    min-width: 420px;
 }
 
-.warning-message {
-    color: #ff9800;
-    font-size: 0.875rem;
-    margin-top: 6px;
-    text-align: left;
-}
-
-.char-count {
-    font-size: 0.875rem;
-    color: #666;
-    text-align: right;
-    margin-top: 5px;
+.wifi-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: $input-width;
 }
 
 .qr-container {
@@ -233,16 +245,6 @@ textarea.error {
     border-radius: 8px;
 }
 
-.qr-wrapper {
-    margin: 0 auto 1rem;
-    max-width: 100%;
-}
-
-.qr-code {
-    max-width: 100%;
-    height: auto;
-}
-
 .controls {
     display: flex;
     flex-direction: column;
@@ -250,83 +252,100 @@ textarea.error {
     align-items: center;
 }
 
-.controls label {
-    font-weight: 600;
-    color: #34495e;
-}
-
-input[type="range"] {
-    width: 180px;
-    cursor: pointer;
-}
-
 .color-controls {
     display: flex;
     gap: 1rem;
-    justify-content: center;
-    margin-top: 0.5rem;
-}
-
-.color-controls label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
 }
 
 .checkbox {
-    color: #333;
-    margin-top: 0.5rem;
+    input {
+        margin-right: 6px;
+        transform: scale(1.1);
+    }
 }
 
 .pro-hint {
     font-size: 0.9rem;
     color: #888;
-    margin-top: 0.3rem;
 }
 
 .action-buttons {
-    display: flex;
-    gap: 12px;
     margin-top: 1rem;
-    flex-wrap: wrap;
-    justify-content: center;
 }
 
-.download-btn {
-    background-color: #42b983;
+.btn {
     padding: 10px 22px;
     border-radius: 6px;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
     border: none;
-    transition: background-color 0.3s ease;
-}
+    cursor: pointer;
+    font-weight: 600;
+    color: #fff;
 
-.download-btn:hover {
-    background-color: #369d6f;
-}
+    &.save {
+        background: #9c27b0;
 
-.download-btn.secondary {
-    background-color: #2196f3;
-}
-
-.download-btn.secondary:hover {
-    background-color: #0b7dda;
-}
-
-.download-btn.save-btn {
-    background-color: #9c27b0;
-}
-
-.download-btn.save-btn:hover {
-    background-color: #7b1fa2;
+        &:hover {
+            background: #7b1fa2;
+        }
+    }
 }
 
 .placeholder {
     margin-top: 3rem;
+    color: #777;
     font-style: italic;
-    color: #666;
-    font-size: 1rem;
+}
+
+textarea {
+    min-width: 394px;
+}
+
+/* ===== Color input (нормальный квадрат цвета) ===== */
+input[type="color"] {
+    padding: 0;
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background: none;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+    border-radius: 6px;
+    border: 1.5px solid #ccc;
+}
+
+input[type="color"]::-moz-color-swatch {
+    border-radius: 6px;
+    border: 1.5px solid #ccc;
+}
+
+.size-control {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    max-width: 420px;
+
+    span {
+        font-weight: 600;
+        white-space: nowrap;
+    }
+}
+
+.size-value {
+    min-width: 60px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+input[type="range"] {
+    accent-color: #42b983;
 }
 </style>

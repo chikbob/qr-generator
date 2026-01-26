@@ -88,6 +88,24 @@ export default {
         placeholderEmpty: 'Введите текст выше, чтобы сгенерировать QR-код',
         errorGenerate: 'Ошибка генерации QR-кода:',
         errorGenerateSVG: 'Ошибка генерации SVG:',
+        colorDark: 'Темный оттенок',
+        colorLight: 'Светлый оттенок',
+
+        type: {
+            text: 'Текст / URL',
+            wifi: 'Wi-Fi',
+        },
+        textPlaceholder: 'Введите текст или ссылку',
+        size: 'Размер',
+        dynamic: 'Динамический QR',
+        save: 'Сохранить',
+        wifi: {
+            ssid: 'Название сети (SSID)',
+            password: 'Пароль',
+            wpa: 'WPA / WPA2',
+            wep: 'WEP',
+            open: 'Открытая сеть',
+        },
     },
 
     qrHistory: {
@@ -247,7 +265,7 @@ export default {
         email: 'Почта',
         phone: 'Телефон',
         address: 'Адрес',
-        addressValue: 'г. Киев, ул. Примерная, 1',
+        addressValue: 'г. Мариуполь, ул. Примерная, 1',
         number: '+7 (949) 999-99-99',
 
         feedback: {
@@ -265,4 +283,5 @@ export default {
             success: 'Ваше обращение успешно отправлено!',
         },
     },
+
 }

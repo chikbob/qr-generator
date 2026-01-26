@@ -11,7 +11,9 @@ class QrCode extends Model
 
     protected $fillable = [
         'user_id',
+        'type',
         'content',
+        'payload',
         'image_path',
         'size',
         'color_dark',
@@ -20,9 +22,13 @@ class QrCode extends Model
         'slug',
     ];
 
+    protected $casts = [
+        'payload' => 'array',
+        'is_dynamic' => 'boolean',
+    ];
+
     public function scans()
     {
         return $this->hasMany(\App\Models\QrScan::class);
     }
-
 }
