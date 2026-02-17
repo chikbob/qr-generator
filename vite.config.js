@@ -24,4 +24,28 @@ export default defineConfig({
             '@': path.resolve(__dirname, 'resources/js'),
         },
     },
+
+    build: {
+        outDir: 'public/build',
+        manifest: 'manifest.json',
+        minify: 'terser',
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    'vendor': ['vue', '@inertiajs/vue3'],
+                },
+            },
+        },
+    },
+
+    server: {
+        host: '0.0.0.0',
+        port: 5173,
+        strictPort: false,
+        hmr: {
+            host: 'localhost',
+            port: 5173,
+            protocol: 'http',
+        },
+    },
 })

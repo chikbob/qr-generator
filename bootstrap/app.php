@@ -52,4 +52,6 @@ $app->singleton(
 |
 */
 
+require __DIR__ . '/../app/Helpers/InertiaHelpers.php';
+
 return $app;

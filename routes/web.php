@@ -19,28 +19,6 @@ use Inertia\Inertia;
 |
 */
 
-if (!function_exists('inertiaWithUser')) {
-    function inertiaWithUser(string $component, array $props = [])
-    {
-        $user = Auth::user();
-
-        return Inertia::render($component, array_merge($props, [
-            'auth' => [
-                'user' => $user ? [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'plan' => $user->plan?->name ?? 'Free', // <-- добавляем план пользователя
-                ] : null,
-            ],
-            'flash' => [
-                'success' => session('success'),
-                'error' => session('error'),
-            ],
-        ]));
-    }
-}
-
 /*
 |--------------------------------------------------------------------------
 | Публичные страницы
