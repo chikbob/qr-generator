@@ -296,6 +296,7 @@ export default {
 
     show: {
         back: '← Back to list',
+        backContact: '← Back to contacts',
         category: 'Category',
         status: 'Status',
         plan: 'Plan',

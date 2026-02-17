@@ -1,9 +1,15 @@
 <template>
     <AppLayout>
         <div class="feedback-container">
-            <h2 style="margin: 2rem 0; display: flex; justify-content: center; font-size: 1.8rem">
-                {{ t('list.title') }}
-            </h2>
+
+            <!-- Верхняя панель -->
+            <div class="page-header">
+                <Link href="/contacts" class="back-link">
+                    {{ t('show.backContact') }}
+                </Link>
+
+                <h2>{{ t('list.title') }}</h2>
+            </div>
 
             <div class="feedback-list-card">
                 <table class="feedback-table">
@@ -19,11 +25,11 @@
 
                     <tbody>
                     <tr v-for="item in feedbacks" :key="item.id">
-                        <td>{{ item.subject }}</td>
-
-                        <td>
-                            {{ t(`categories.${item.category}`) }}
+                        <td class="subject-cell">
+                            {{ item.subject }}
                         </td>
+
+                        <td>{{ t(`categories.${item.category}`) }}</td>
 
                         <td>
                             <span :class="['status-badge', item.status]">
@@ -51,6 +57,7 @@
                     </tbody>
                 </table>
             </div>
+
         </div>
     </AppLayout>
 </template>
@@ -60,7 +67,7 @@ import {Link} from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import {useI18n} from "@/lang/useI18n.js";
 
-const { t } = useI18n()
+const {t} = useI18n()
 
 defineProps({
     feedbacks: Array,
@@ -79,99 +86,139 @@ const formatDate = (dateStr) => {
 .feedback-container {
     max-width: 900px;
     margin: 0 auto;
-    padding: 0 20px 30px;
-    font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    padding: 0 20px 40px;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+}
 
-    h1 {
+/* Верхняя панель */
+.page-header {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 2rem 0 2.5rem;
+
+    h2 {
+        font-weight: 900;
+        font-size: 2.4rem;
         text-align: center;
-        color: #2c3e50;
-        margin-bottom: 35px;
+        background: linear-gradient(135deg, #e095bc, #bd6592);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        user-select: none;
+    }
+
+    .back-link {
+        align-self: flex-start;
+        color: #e095bc;
         font-weight: 600;
+        text-decoration: none;
+
+        &:hover {
+            color: #bd6592;
+            text-decoration: underline;
+        }
     }
 }
 
+/* Карточка списка */
 .feedback-list-card {
-    background: #ffffff;
-    border-radius: 14px;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-    padding: 30px 25px;
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 10px 28px rgba(225, 108, 167, 0.18);
+    padding: 28px;
+}
 
-    .feedback-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 1rem;
-        color: #2c3e50;
+/* Таблица */
+.feedback-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 1rem;
+    color: #475569;
 
-        th,
-        td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #e0e0e0;
-            text-align: left;
-            vertical-align: middle;
-        }
-
-        th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            color: #495057;
-        }
-
-        tbody tr:hover {
-            background-color: #f1f8f5;
-        }
-
-        .no-data {
-            text-align: center;
-            color: #888;
-            font-style: italic;
-            padding: 30px 0;
-        }
+    th,
+    td {
+        padding: 16px;
+        border-bottom: 1px solid #e2e8f0;
+        text-align: left;
+        vertical-align: middle;
     }
 
-    .status-badge {
-        display: inline-block;
-        padding: 5px 12px;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 0.85rem;
-        color: white;
-
-        &.new {
-            background-color: #d5c13b;
-        }
-
-        &.in_progress {
-            background-color: #42b983;
-        }
-
-        &.resolved {
-            background-color: #4caf50;
-        }
+    th {
+        background: #f8fafc;
+        font-weight: 800;
+        color: #475569;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
     }
 
-    .action-link {
-        color: #42b983;
-        text-decoration: none;
-        font-weight: 500;
-        transition: color 0.2s ease;
+    tbody tr {
+        transition: background 0.25s ease, transform 0.15s ease;
 
         &:hover {
-            color: #2e8b63;
-            text-decoration: underline;
+            background: #fce7f3;
         }
+    }
+
+    .subject-cell {
+        font-weight: 600;
+        color: #7a2c55;
+    }
+
+    .no-data {
+        text-align: center;
+        color: #a23168;
+        font-style: italic;
+        padding: 32px 0;
+    }
+}
+
+/* Статусы */
+.status-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: white;
+    white-space: nowrap;
+
+    &.new {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+
+    &.in_progress {
+        background: linear-gradient(135deg, #e095bc, #bd6592);
+    }
+
+    &.resolved {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+    }
+}
+
+/* Ссылка действия */
+.action-link {
+    color: #e095bc;
+    font-weight: 700;
+    text-decoration: none;
+
+    &:hover {
+        color: #bd6592;
+        text-decoration: underline;
     }
 }
 
 /* Адаптив */
 @media (max-width: 768px) {
     .feedback-list-card {
-        padding: 20px 15px;
+        padding: 20px;
+    }
 
-        .feedback-table th,
-        .feedback-table td {
-            padding: 10px 8px;
-            font-size: 0.9rem;
-        }
+    .feedback-table th,
+    .feedback-table td {
+        padding: 12px;
+        font-size: 0.9rem;
     }
 }
 </style>

@@ -297,6 +297,7 @@ export default {
 
     show: {
         back: '← Назад к списку',
+        backContact: '← Назад в контакты',
         category: 'Категория',
         status: 'Статус',
         plan: 'Тариф',

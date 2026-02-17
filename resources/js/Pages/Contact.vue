@@ -1,8 +1,7 @@
 <template>
     <AppLayout>
         <div class="contact-container">
-            <h2
-                style="margin: 2rem 0; display: flex; justify-content: center; font-size: 1.8rem">
+            <h2>
                 {{ $t('contacts.title') }}
             </h2>
 
@@ -109,42 +108,88 @@ const submit = () => {
 </script>
 
 <style scoped lang="scss">
+$accent: #e095bc;
+$accent-dark: #bd6592;
+$accent-soft: #fce7f3;
+
+$text-main: #0f172a;
+$text-secondary: #475569;
+$border: #e2e8f0;
+$bg-soft: #f8fafc;
+
 .contact-container {
     max-width: 900px;
-    margin: 0 auto;
-    padding: 0 20px 30px;
+    margin: 0 auto 4rem;
+    padding: 0 20px;
     font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 
-    h1 {
+    h2 {
+        font-weight: 800;
+        font-size: 2.4rem;
+        margin-bottom: 2rem;
         text-align: center;
-        color: #2c3e50;
-        margin-bottom: 35px;
-        font-weight: 600;
+        background: linear-gradient(135deg, $accent, $accent-dark);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        user-select: none;
     }
 }
 
 .contact-card {
     background: #ffffff;
-    border-radius: 14px;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-    padding: 40px;
+    border-radius: 24px;
+    padding: 3rem;
+    border: 1.5px solid $border;
+    box-shadow: 0 30px 60px rgba(15, 23, 42, 0.08);
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 35px 70px rgba(236, 72, 153, 0.15);
+    }
 }
 
 .contact-info {
-    background: #f8f9fa;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 30px;
+    background: $bg-soft;
+    border: 1.5px solid $border;
+    border-radius: 18px;
+    padding: 2rem;
+    margin-bottom: 2.5rem;
+    color: $text-main;
+    font-size: 1.05rem;
+    font-weight: 500;
 
     p {
-        margin: 6px 0;
-        font-size: 1rem;
-        color: #333;
+        margin: 12px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
 
         strong {
-            color: #2c3e50;
+            color: $accent-dark;
+            min-width: 100px;
         }
+    }
+
+    p::before {
+        content: '';
+        width: 20px;
+        height: 20px;
+        background-size: contain;
+        background-repeat: no-repeat;
+        opacity: 0.8;
+    }
+
+    p:nth-child(1)::before {
+        background-image: url("data:image/svg+xml,%3Csvg fill='%23bd6592' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5Z'/%3E%3C/svg%3E");
+    }
+
+    p:nth-child(2)::before {
+        background-image: url("data:image/svg+xml,%3Csvg fill='%23bd6592' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.11-.21c1.2.48 2.5.74 3.85.74a1 1 0 0 1 1 1v3.5a1 1 0 0 1-1 1A17 17 0 0 1 3 6a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.35.26 2.65.74 3.85a1 1 0 0 1-.21 1.11Z'/%3E%3C/svg%3E");
+    }
+
+    p:nth-child(3)::before {
+        background-image: url("data:image/svg+xml,%3Csvg fill='%23bd6592' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7Zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z'/%3E%3C/svg%3E");
     }
 }
 
@@ -152,25 +197,23 @@ const submit = () => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
+    margin-bottom: 2rem;
 
     h2 {
         margin: 0;
-        font-size: 1.4rem;
-        color: #2c3e50;
-        font-weight: 600;
+        font-size: 1.5rem;
+        color: $text-main;
+        font-weight: 700;
     }
 
     .feedback-link {
-        color: #42b983;
-        font-size: 0.95rem;
+        color: $accent-dark;
+        font-weight: 600;
         text-decoration: none;
-        font-weight: 500;
-        transition: color 0.2s ease;
+        transition: all 0.25s ease;
 
         &:hover {
-            color: #2e8b63;
-            text-decoration: underline;
+            color: $accent;
         }
     }
 }
@@ -178,82 +221,84 @@ const submit = () => {
 .feedback-form {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 1.8rem;
 
     .form-group {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 8px;
 
         label {
-            font-weight: 500;
-            color: #444;
-            font-size: 0.95rem;
+            font-weight: 600;
+            color: $text-secondary;
         }
 
         input,
         select,
         textarea {
-            max-width: 100%;
-            border: 1px solid #cfd8dc;
-            border-radius: 8px;
+            border: 1.5px solid $border;
+            border-radius: 16px;
             font-size: 1rem;
-            padding: 12px 14px;
-            transition: all 0.2s ease;
-            color: #2c3e50;
+            padding: 14px 16px;
+            transition: all 0.3s ease;
+            color: $text-main;
+            background: $bg-soft;
 
             &:focus {
-                border-color: #42b983;
-                box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.2);
+                border-color: $accent;
+                box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.15);
+                background: #ffffff;
                 outline: none;
             }
         }
 
         textarea {
-            min-height: 120px;
+            min-height: 140px;
             resize: vertical;
         }
     }
 
     .submit-btn {
-        background-color: #42b983;
-        color: white;
+        background: linear-gradient(135deg, $accent, $accent-dark);
+        color: #fff;
         border: none;
-        border-radius: 8px;
-        padding: 12px;
-        font-size: 1rem;
-        font-weight: 600;
+        border-radius: 999px;
+        padding: 14px 32px;
+        font-size: 1.05rem;
+        font-weight: 700;
         cursor: pointer;
-        transition: all 0.2s;
+        align-self: flex-start;
+        box-shadow: 0 14px 32px rgba(236, 72, 153, 0.4);
+        transition: all 0.3s ease;
 
         &:hover:not(:disabled) {
-            background-color: #3aa876;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 20px 45px rgba(236, 72, 153, 0.5);
         }
 
         &:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+            box-shadow: none;
         }
     }
 
     .success-message {
-        margin-top: 15px;
-        background-color: #e8f5e9;
-        border-left: 4px solid #42b983;
-        color: #2e7d32;
-        padding: 12px 16px;
-        border-radius: 6px;
+        margin-top: 1.5rem;
+        background: $accent-soft;
+        border-left: 4px solid $accent-dark;
+        color: $accent-dark;
+        padding: 14px 20px;
+        border-radius: 14px;
         text-align: center;
-        font-size: 0.95rem;
+        font-weight: 600;
+        box-shadow: 0 10px 30px rgba(236, 72, 153, 0.12);
     }
 }
 
-/* Анимация уведомления */
 .fade-enter-active,
 .fade-leave-active {
-    transition: opacity 0.3s;
+    transition: opacity 0.3s ease;
 }
 
 .fade-enter-from,
@@ -261,10 +306,9 @@ const submit = () => {
     opacity: 0;
 }
 
-/* Адаптив */
 @media (max-width: 768px) {
     .contact-card {
-        padding: 25px;
+        padding: 2rem;
     }
 
     .feedback-header {
@@ -274,3 +318,4 @@ const submit = () => {
     }
 }
 </style>
+

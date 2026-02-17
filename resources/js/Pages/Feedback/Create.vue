@@ -59,21 +59,28 @@ const submit = () => {
 <style scoped lang="scss">
 .form-container {
     max-width: 600px;
-    margin: 2rem auto;
+    margin: 2.5rem auto;
     padding: 0 1rem;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', Roboto, sans-serif;
 
     h1 {
         text-align: center;
         margin-bottom: 2rem;
-        font-weight: 700;
-        color: #2c3e50;
+        font-size: 2.2rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #e095bc, #bd6592);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
 
     form {
         display: flex;
         flex-direction: column;
-        gap: 1.5rem;
+        gap: 1.6rem;
+        background: #fff;
+        padding: 2rem;
+        border-radius: 24px;
+        box-shadow: 0 8px 24px rgba(225, 108, 167, 0.18);
     }
 }
 
@@ -83,56 +90,56 @@ const submit = () => {
 
     label {
         margin-bottom: 0.5rem;
-        font-weight: 600;
-        color: #34495e;
+        font-weight: 700;
+        color: #475569;
     }
 }
 
 .form-input {
-    padding: 10px 12px;
-    border: 1.5px solid #ccc;
-    border-radius: 6px;
-    font-size: 1rem;
-    font-family: inherit;
-    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    padding: 14px 16px;
+    border: 1.8px solid #e2e8f0;
+    border-radius: 16px;
+    font-size: 1.05rem;
+    background: #f8fafc;
+    transition: all 0.25s ease;
 
     &:focus {
         outline: none;
-        border-color: #42b983;
-        box-shadow: 0 0 6px rgba(66, 185, 131, 0.5);
-    }
-
-    &:disabled {
-        background: #f5f5f5;
-        cursor: not-allowed;
+        border-color: #e095bc;
+        box-shadow: 0 0 10px rgba(225, 108, 167, 0.3);
+        background: #fff;
     }
 }
 
 .error-text {
     margin-top: 0.25rem;
-    font-size: 0.875rem;
-    color: #e74c3c;
+    font-size: 0.85rem;
+    color: #e11d48;
 }
 
 .btn-primary {
     align-self: center;
-    background-color: #42b983;
+    margin-top: 1rem;
+    background: linear-gradient(135deg, #e095bc, #bd6592);
     color: white;
-    font-weight: 600;
-    padding: 12px 28px;
+    font-weight: 700;
+    padding: 14px 36px;
     border: none;
-    border-radius: 8px;
+    border-radius: 24px;
     cursor: pointer;
     font-size: 1.1rem;
-    transition: background-color 0.3s ease;
+    box-shadow: 0 6px 18px rgba(225, 108, 167, 0.4);
+    transition: all 0.3s ease;
 
     &:hover:not(:disabled) {
-        background-color: #369d6f;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 26px rgba(189, 101, 146, 0.6);
     }
 
     &:disabled {
-        background-color: #8fcab7;
+        opacity: 0.6;
         cursor: not-allowed;
+        box-shadow: none;
     }
 }
 </style>

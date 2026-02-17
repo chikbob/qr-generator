@@ -39,67 +39,101 @@ import {useI18n} from '@/lang/useI18n'
 const {t} = useI18n()
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+$accent: #e095bc;
+$accent-dark: #bd6592;
+$accent-soft: #fce7f3;
+
+$text-main: #0f172a;
+$text-secondary: #475569;
+$border: #e2e8f0;
+$bg-soft: #f8fafc;
+
 .home-view {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem 1rem;
-    color: #2c3e50;
+    padding: 4rem 1.5rem;
+    border-radius: 24px;
+    font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
 h1 {
-    font-size: 2.4rem;
-    font-weight: 700;
-    margin-bottom: 2rem;
-    color: #34495e;
+    font-size: 2.6rem;
+    font-weight: 800;
     text-align: center;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, $accent, $accent-dark);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .features {
+    margin-top: 3rem;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 2rem;
 }
 
 .feature-card {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 1.5rem;
-    background: #fff;
-    box-shadow: 0 4px 12px rgb(0 0 0 / 0.05);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: #ffffff;
+    border: 1.5px solid $border;
+    border-radius: 24px;
+    padding: 2.5rem 2rem;
     text-align: center;
-    cursor: pointer;
-}
+    transition: all 0.3s ease;
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.06);
 
-.feature-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgb(0 0 0 / 0.1);
-}
+    &:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 30px 60px rgba(236, 72, 153, 0.15);
+    }
 
-.feature-card h3 {
-    margin-bottom: 0.75rem;
-    color: #42b983;
-}
+    h3 {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: $accent-dark;
+    }
 
-.feature-card p {
-    color: #555;
-    font-size: 1rem;
+    p {
+        color: $text-secondary;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
 }
 
 .feature-link {
-    margin-top: 1.2rem;
     display: inline-block;
-    background-color: #42b983;
-    color: white;
-    padding: 10px 22px;
-    border-radius: 6px;
+    background: linear-gradient(135deg, $accent, $accent-dark);
+    color: #ffffff;
+    padding: 14px 32px;
+    border-radius: 999px;
+    font-weight: 700;
     text-decoration: none;
-    font-weight: 600;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 14px 32px rgba(236, 72, 153, 0.35);
+
+    &:hover {
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 20px 45px rgba(236, 72, 153, 0.55);
+    }
 }
 
-.feature-link:hover {
-    background-color: #369d6f;
+@media (max-width: 768px) {
+    .home-view {
+        padding: 2rem 1rem;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    .feature-card {
+        padding: 2rem 1.5rem;
+    }
+
+    .feature-link {
+        width: 100%;
+    }
 }
 </style>

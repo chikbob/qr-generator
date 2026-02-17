@@ -4,7 +4,7 @@
             <h2>{{ t('qrAnalytics.title') }}</h2>
 
             <div class="qr-summary">
-                <img :src="qrCode.image_path" class="qr-image" />
+                <img :src="qrCode.image_path" class="qr-image"/>
                 <div>
                     <p><strong>{{ t('qrAnalytics.content') }}:</strong> {{ qrCode.content }}</p>
                     <p><strong>{{ t('qrAnalytics.totalScans') }}:</strong> {{ qrCode.scans_count }}</p>
@@ -46,13 +46,13 @@
 
 <script setup>
 import AppLayout from "@/Layouts/AppLayout.vue"
-import { onMounted, ref } from "vue"
-import { usePage } from "@inertiajs/vue3"
-import { useI18n } from "@/lang/useI18n"
+import {onMounted, ref} from "vue"
+import {usePage} from "@inertiajs/vue3"
+import {useI18n} from "@/lang/useI18n"
 import Chart from "chart.js/auto"
 
-const { t } = useI18n()
-const { props } = usePage()
+const {t} = useI18n()
+const {props} = usePage()
 const qrCode = props.qrCode
 const scans = props.scans
 
@@ -85,53 +85,146 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+$color-primary: #db2777;
+$color-primary-dark: #9d174d;
+$color-primary-light: #fce7f3;
+$color-secondary: #8b5cf6;
+$color-bg: #fff;
+$color-text: #2c3e50;
+$color-text-muted: #5b2c52;
+$font-main: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
 .qr-analytics {
     max-width: 900px;
-    margin: 2rem auto;
-    background: #fff;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-    color: #2c3e50;
+    margin: 3rem auto;
+    background: $color-bg;
+    padding: 3rem 3rem 4rem;
+    border-radius: 24px;
+    box-shadow: 0 18px 48px rgba($color-primary, 0.15),
+    inset 0 0 30px rgba($color-primary-light, 0.4);
+    color: $color-text;
+    font-family: $font-main;
+    user-select: none;
 }
 
 h2, h3 {
     text-align: center;
-    color: #34495e;
+    color: $color-primary-dark;
+    font-weight: 900;
+    margin-bottom: 2rem;
+    user-select: none;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
 }
 
 .qr-summary {
     display: flex;
-    gap: 1.5rem;
+    flex-wrap: wrap;
+    gap: 2.5rem;
     align-items: center;
-    margin-bottom: 2rem;
+    justify-content: center;
+    margin-bottom: 3rem;
 }
 
 .qr-image {
-    width: 120px;
-    height: 120px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
+    width: 140px;
+    height: 140px;
+    border-radius: 24px;
+    border: 3px solid $color-primary;
+    box-shadow: 0 0 25px rgba($color-primary, 0.5),
+    inset 0 0 15px rgba($color-primary-light, 0.6);
+    transition: transform 0.3s ease;
+
+    &:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 30px rgba($color-primary, 0.7),
+        inset 0 0 20px rgba($color-primary-light, 0.8);
+    }
+}
+
+.summary-info {
+    max-width: 600px;
+    font-size: 1.2rem;
+    color: $color-text-muted;
+    font-weight: 700;
+    line-height: 1.5;
+    user-select: text;
+
+    p {
+        margin-bottom: 0.8rem;
+    }
+
+    p strong {
+        color: $color-primary;
+        user-select: none;
+    }
 }
 
 .chart-container {
-    margin: 1rem 0 2rem;
     width: 100%;
+    margin-bottom: 3.5rem;
+    user-select: none;
+    border-radius: 24px;
+    padding: 1rem;
+    background: linear-gradient(135deg, #fce7f3, #fbcfe8);
+    box-shadow: inset 0 0 20px rgba($color-primary-light, 0.5),
+    0 6px 18px rgba($color-primary, 0.15);
 }
 
 .scan-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 2px 0;
+    font-size: 1.05rem;
+    color: $color-text-muted;
+    user-select: text;
+    border-radius: 24px;
+    overflow: hidden;
+
+    th,
+    td {
+        padding: 14px 18px;
+        text-align: center;
+        user-select: text;
+    }
+
+    th {
+        background-color: $color-primary-light;
+        color: $color-primary-dark;
+        font-weight: 700;
+        border-top-left-radius: 24px;
+        border-top-right-radius: 24px;
+        user-select: none;
+        box-shadow: inset 0 -2px 6px rgba($color-primary, 0.15);
+    }
+
+    tbody tr {
+        background: #fff0f6;
+        border-radius: 20px;
+        box-shadow: 0 5px 14px rgba($color-primary, 0.12);
+        transition: background-color 0.3s ease;
+
+        &:hover {
+            background-color: #f9d6e4;
+        }
+    }
 }
 
-.scan-table th, .scan-table td {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    text-align: center;
-}
+@media (max-width: 650px) {
+    .qr-summary {
+        flex-direction: column;
+    }
 
-.scan-table th {
-    background-color: #f4f6f8;
+    .summary-info {
+        max-width: 100%;
+        text-align: center;
+    }
+
+    .scan-table th,
+    .scan-table td {
+        padding: 10px 8px;
+        font-size: 0.9rem;
+    }
 }
 </style>

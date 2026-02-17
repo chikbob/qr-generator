@@ -38,11 +38,11 @@
 
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue'
-import { router, usePage } from '@inertiajs/vue3'
-import { computed } from 'vue'
-import { useI18n } from '@/lang/useI18n'
+import {router, usePage} from '@inertiajs/vue3'
+import {computed} from 'vue'
+import {useI18n} from '@/lang/useI18n'
 
-const { t } = useI18n()
+const {t} = useI18n()
 
 const page = usePage()
 const plans = computed(() => page.props.plans || [])
@@ -56,88 +56,150 @@ function handlePlanSelection(plan) {
     // Бесплатный тариф — подтверждение перехода
     if (plan.name.toLowerCase() === 'free' || plan.price == 0) {
         if (confirm(t('plans.confirmFree'))) {
-            router.post(route('plans.subscribe'), { plan_id: plan.id }, {
+            router.post(route('plans.subscribe'), {plan_id: plan.id}, {
                 onSuccess: () => {
-                    router.reload({ only: ['auth', 'currentPlanId', 'flash'] })
+                    router.reload({only: ['auth', 'currentPlanId', 'flash']})
                 }
             })
         }
     } else {
-        router.get(route('plans.payment', { plan: plan.id }))
+        router.get(route('plans.payment', {plan: plan.id}))
     }
 }
 </script>
 
-<style scoped>
-/* стили оставляем без изменений */
+<style lang="scss" scoped>
 .plans-container {
-    max-width: 900px;
-    margin: 0 auto;
+    max-width: 960px;
+    margin: 3rem auto;
+    padding: 0 1rem;
     text-align: center;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+
+    h2 {
+        font-size: 2.2rem;
+        font-weight: 900;
+        margin-bottom: 2rem;
+        background: linear-gradient(135deg, #e095bc, #bd6592);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
 }
 
 .success-message {
-    color: #2e7d32;
-    background: #e8f5e9;
-    padding: 10px;
-    border-radius: 8px;
-    margin-bottom: 20px;
+    background: #fce7f3;
+    color: #9d174d;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
 }
 
 .error-message {
-    color: #c62828;
-    background: #ffebee;
-    padding: 10px;
-    border-radius: 8px;
-    margin-bottom: 20px;
+    background: #ffe4e6;
+    color: #be123c;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.empty-plans {
+    font-size: 1.1rem;
+    color: #475569;
 }
 
 .plans-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 20px;
+    gap: 24px;
 }
 
 .plan-card {
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 20px;
     background: #fff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    transition: 0.2s;
-}
+    padding: 1.8rem;
+    border-radius: 24px;
+    box-shadow: 0 10px 25px rgba(236, 72, 153, 0.15);
+    border: 2px solid transparent;
+    transition: all 0.25s ease;
+    text-align: left;
 
-.plan-card.active {
-    border-color: #42b983;
-    box-shadow: 0 4px 12px rgba(66, 185, 131, 0.3);
-}
+    &:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 16px 30px rgba(236, 72, 153, 0.25);
+    }
 
-.plan-card:hover {
-    transform: translateY(-3px);
+    &.active {
+        border-color: #bd6592;
+        background: linear-gradient(180deg, #fff, #fce7f3);
+    }
 }
 
 .plan-name {
-    margin: 0 0 10px;
+    position: relative;
+    padding-right: 80px;
+
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 0.6rem;
+    color: #bd6592;
+    line-height: 1.3;
+    flex-wrap: wrap;
 }
 
 .current-tag {
-    color: #42b983;
-    font-size: 0.9em;
-    margin-left: 4px;
+    position: absolute;
+    top: 0.16em;
+    right: 0;
+
+    padding: 0 10px 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+
+    color: #e095bc;
+    border-radius: 999px;
+    white-space: nowrap;
+
+    -webkit-text-fill-color: initial;
+    background-clip: border-box;
+}
+
+.plan-description {
+    font-size: 1rem;
+    color: #475569;
+    margin-bottom: 0.8rem;
+}
+
+.plan-price {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #bd6592;
+    margin-bottom: 1.2rem;
 }
 
 .btn-select {
-    margin-top: 10px;
-    background: #42b983;
+    width: 100%;
+    padding: 10px 0;
+    border-radius: 999px;
     border: none;
-    color: white;
-    padding: 8px 15px;
-    border-radius: 6px;
+    font-weight: 700;
+    font-size: 1rem;
     cursor: pointer;
-}
+    background: linear-gradient(135deg, #e095bc, #bd6592);
+    color: #fff;
+    transition: all 0.25s ease;
 
-.btn-select:disabled {
-    background: #ccc;
-    cursor: not-allowed;
+    &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(236, 72, 153, 0.4);
+    }
+
+    &:disabled {
+        background: #fce7f3;
+        cursor: not-allowed;
+        box-shadow: none;
+        color: #9d174d;
+    }
 }
 </style>
