@@ -48,7 +48,7 @@
 import AppLayout from "@/Layouts/AppLayout.vue"
 import {onMounted, ref} from "vue"
 import {usePage} from "@inertiajs/vue3"
-import {useI18n} from "@/lang/useI18n"
+import {useI18n} from "@/Lang/useI18n"
 import Chart from "chart.js/auto"
 
 const {t} = useI18n()

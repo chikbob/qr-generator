@@ -61,7 +61,7 @@
 import { usePage, useForm } from '@inertiajs/vue3'
 import { computed } from 'vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
-import { useI18n } from '@/lang/useI18n'
+import { useI18n } from '@/Lang/useI18n'
 
 const { t } = useI18n()
 const page = usePage()

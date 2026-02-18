@@ -205,7 +205,7 @@ import {ref, computed, watch} from 'vue'
 import QRCode from 'qrcode'
 import {router, usePage} from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
-import {useI18n} from '@/lang/useI18n'
+import {useI18n} from '@/Lang/useI18n'
 
 const {t} = useI18n()
 const page = usePage()
@@ -220,10 +220,13 @@ const colorLight = ref('#ffffff')
 
 const isDynamic = ref(false)
 
-const userPlan = computed(() => page.props.auth?.user?.plan ?? 'Free')
-const canUseDynamic = computed(() =>
-    ['Pro', 'Enterprise'].includes(userPlan.value)
-)
+// Получаем plan_id (по умолчанию 1 = Free)
+const userPlanId = computed(() => page.props.auth?.user?.plan_id ?? 1)
+
+// Разрешаем dynamic для plan_id 2 и 3
+const canUseDynamic = computed(() => {
+    return [2, 3].includes(Number(userPlanId.value))
+})
 
 const pdfFile = ref(null)
 const pdfFileName = ref('')
@@ -393,7 +396,7 @@ const saveToHistory = async () => {
             size: size.value,
             color_dark: colorDark.value,
             color_light: colorLight.value,
-            is_dynamic: isDynamic.value,
+            is_dynamic: canUseDynamic.value ? isDynamic.value : false,
         })
     } catch (error) {
         console.error('Ошибка сохранения QR:', error)
@@ -422,7 +425,6 @@ watch(qrType, () => {
         }
     }
 })
-
 </script>
 
 <style scoped lang="scss">

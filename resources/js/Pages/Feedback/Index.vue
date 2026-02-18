@@ -65,7 +65,7 @@
 <script setup>
 import {Link} from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
-import {useI18n} from "@/lang/useI18n.js";
+import {useI18n} from "@/Lang/useI18n.js";
 
 const {t} = useI18n()
 

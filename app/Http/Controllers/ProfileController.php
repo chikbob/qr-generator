@@ -34,11 +34,39 @@ class ProfileController extends Controller
 
     public function update(Request $request)
     {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $request->user()->id,
+        ]);
+
         $user = $request->user();
-        $user->fill($request->only(['name', 'email']));
+        $user->fill($validated);
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
         $user->save();
 
-        return redirect()->route('profile.edit');
+        return redirect()->route('profile.show')->with('status', 'profile-updated');
+    }
+
+    public function destroy(Request $request)
+    {
+        $request->validate([
+            'password' => ['required', 'current-password'],
+        ]);
+
+        $user = $request->user();
+
+        Auth::logout();
+
+        $user->delete();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/');
     }
 
     public function show()
@@ -49,5 +77,4 @@ class ProfileController extends Controller
             ],
         ]);
     }
-
 }

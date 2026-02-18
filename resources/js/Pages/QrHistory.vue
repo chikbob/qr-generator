@@ -123,7 +123,7 @@
 import AppLayout from "@/Layouts/AppLayout.vue"
 import {usePage, router} from "@inertiajs/vue3"
 import {ref, computed, watch} from "vue"
-import {useI18n} from '@/lang/useI18n'
+import {useI18n} from '@/Lang/useI18n'
 
 const {t} = useI18n()
 

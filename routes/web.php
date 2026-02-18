@@ -36,6 +36,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'show'])
         ->middleware(['verified'])
         ->name('profile.show');
+    
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
+    
+    Route::patch('/profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
+    
+    Route::delete('/profile', [ProfileController::class, 'destroy'])
+        ->name('profile.destroy');
 
     Route::get('/plans', [PlanController::class, 'index'])->name('plans.index');
     Route::get('/plans/{plan}/payment', [PlanController::class, 'payment'])->name('plans.payment');
@@ -68,3 +77,6 @@ Route::get('/contacts', fn() => inertiaWithUser('Contact'))
 
 // 🔐 Breeze/Fortify маршруты
 require __DIR__ . '/auth.php';
+
+// 🏥 Health check маршруты
+require __DIR__ . '/health.php';

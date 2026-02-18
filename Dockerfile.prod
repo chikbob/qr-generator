@@ -1,0 +1,94 @@
+# Multi-stage production Dockerfile for Laravel app
+
+# Stage 1: Build PHP dependencies
+FROM php:8.1-cli as php-build
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    unzip libpng-dev libonig-dev libxml2-dev libzip-dev pkg-config \
+    && docker-php-ext-install pdo_mysql zip gd \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /build
+COPY composer.json composer.lock ./
+RUN composer install --no-interaction --optimize-autoloader --no-dev --no-progress
+
+# Stage 2: Build frontend assets
+FROM node:20-alpine as node-build
+WORKDIR /build
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY . .
+RUN npm run build
+
+# Stage 3: Production runtime
+FROM php:8.1-apache
+
+# Install Node.js for potential runtime needs
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl gnupg supervisor \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extensions
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpng-dev libonig-dev libxml2-dev libzip-dev pkg-config \
+    && docker-php-ext-install pdo_mysql zip gd \
+    && a2enmod rewrite headers \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+# Copy PHP dependencies from build stage
+COPY --from=php-build /build/vendor ./vendor
+
+# Copy frontend assets from build stage
+COPY --from=node-build /build/public ./public
+
+# Copy application code
+COPY . .
+
+# Create required directories
+RUN mkdir -p database storage bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache database \
+    && chmod -R 775 storage bootstrap/cache
+
+# Configure Apache
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf \
+    && sed -i '/<Directory \/var\/www\/html>/,/<\/Directory>/d' /etc/apache2/sites-available/000-default.conf \
+    && echo '<Directory /var/www/html/public>' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '    AllowOverride All' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '    Require all granted' >> /etc/apache2/sites-available/000-default.conf \
+    && echo '</Directory>' >> /etc/apache2/sites-available/000-default.conf
+
+# Set proper permissions for www-data
+RUN chown -R www-data:www-data /var/www/html
+
+# Create entrypoint script
+RUN echo '#!/bin/bash\n\
+set -e\n\
+\n\
+echo "Clearing Laravel caches..."\n\
+php artisan config:clear\n\
+php artisan route:clear\n\
+php artisan view:clear\n\
+\n\
+echo "Running migrations..."\n\
+php artisan migrate --force\n\
+\n\
+echo "Caching configuration..."\n\
+php artisan config:cache\n\
+php artisan route:cache\n\
+php artisan view:cache\n\
+\n\
+echo "Starting Apache..."\n\
+exec apache2-foreground' > /usr/local/bin/docker-entrypoint.sh \
+    && chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+EXPOSE 80
+CMD ["apache2-foreground"]

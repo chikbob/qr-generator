@@ -1,20 +1,24 @@
 #!/bin/bash
 set -e
 
-# Создаем файл SQLite, если его нет
-if [ ! -f /var/www/html/database/database.sqlite ]; then
-    echo "Creating SQLite database file..."
-    touch /var/www/html/database/database.sqlite
-    chown www-data:www-data /var/www/html/database/database.sqlite
+# Wait for MySQL to be ready
+echo "Waiting for MySQL at $DB_HOST:$DB_PORT..."
+for i in {1..30}; do
+    if mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USERNAME" -p"$DB_PASSWORD" --ssl=0 -e "SELECT 1" > /dev/null 2>&1; then
+        echo "MySQL is ready"
+        break
+    fi
+    echo "MySQL not ready, waiting... ($i/30)"
+    sleep 1
+done
+
+if [ ! -f /tmp/.migrations_done ]; then
+    echo "Running migrations..."
+    php artisan migrate --force --seed
+    touch /tmp/.migrations_done
 fi
 
-echo "DB_CONNECTION: $DB_CONNECTION"
-echo "DB_DATABASE: $DB_DATABASE"
-
-# Запускаем миграции и сиды в продакшене без запроса подтверждения
 php artisan config:clear
 php artisan config:cache
-php artisan migrate --force --seed
 
-# Запускаем Apache в foreground
 exec apache2-foreground

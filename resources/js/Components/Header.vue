@@ -113,7 +113,7 @@ const toggleDropdown = () => {
     if (isOpen.value) {
         nextTick(() => {
             // Фокус на первый элемент списка
-            const firstOption = optionsListRef.value?.querySelector('.lang-option')
+            const firstOption = optionsListRef.value?.querySelector('.Lang-option')
             firstOption?.focus()
         })
     }
@@ -132,7 +132,7 @@ watch(currentLang, (newLang) => {
 // Управление клавиатурой для фокуса по стрелкам
 function focusNextOption(currentIndex = -1) {
     nextTick(() => {
-        const options = optionsListRef.value?.querySelectorAll('.lang-option')
+        const options = optionsListRef.value?.querySelectorAll('.Lang-option')
         if (!options || options.length === 0) return
         const nextIndex = (currentIndex + 1) % options.length
         options[nextIndex].focus()
@@ -141,7 +141,7 @@ function focusNextOption(currentIndex = -1) {
 
 function focusPrevOption(currentIndex = -1) {
     nextTick(() => {
-        const options = optionsListRef.value?.querySelectorAll('.lang-option')
+        const options = optionsListRef.value?.querySelectorAll('.Lang-option')
         if (!options || options.length === 0) return
         let prevIndex = currentIndex - 1
         if (prevIndex < 0) prevIndex = options.length - 1

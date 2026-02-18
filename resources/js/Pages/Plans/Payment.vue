@@ -63,7 +63,7 @@
 import AppLayout from '@/Layouts/AppLayout.vue'
 import { ref } from 'vue'
 import { router, usePage } from '@inertiajs/vue3'
-import { useI18n } from '@/lang/useI18n'
+import { useI18n } from '@/Lang/useI18n'
 
 const { t } = useI18n()
 

@@ -15,12 +15,14 @@ class DatabaseSeeder extends Seeder
         // 🟢 Сначала создаём планы
         $this->call(PlanSeeder::class);
 
-        // 🟢 Теперь можно безопасно создать пользователя с plan_id = 1
-        User::factory()->create([
-            'name' => 'Liza',
-            'email' => 'liza@gmail.com',
-            'password' => bcrypt('password'),
-            'plan_id' => 1,
-        ]);
+        // 🟢 Создаём пользователя только если его нет
+        User::firstOrCreate(
+            ['email' => 'liza@gmail.com'], // проверка по уникальному email
+            [
+                'name' => 'Liza',
+                'password' => bcrypt('password'),
+                'plan_id' => 1,
+            ]
+        );
     }
 }
