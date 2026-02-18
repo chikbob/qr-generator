@@ -45,7 +45,8 @@ class QrCodeController extends Controller
             'is_dynamic' => $code->is_dynamic,
             'redirect_uuid' => $code->redirect_uuid,
             'slug' => $code->slug,
-            'dynamic_url' => $code->is_dynamic ? url('/r/' . $code->slug) : null,
+            'dynamic_url' => $code->is_dynamic ? '/r/' . $code->slug : null,
+            'dynamic_url_full' => $code->is_dynamic ? $this->buildDynamicUrl($code->slug) : null,
             'scans_count' => $code->scans_count,
             'created_at' => $code->created_at->toDateTimeString(),
         ]);
@@ -73,10 +74,11 @@ class QrCodeController extends Controller
     {
         $user = auth()->user();
         $planName = $user->plan?->name ?? 'Free';
+        $isDynamic = $request->boolean('is_dynamic');
 
-        if ($request->boolean('is_dynamic') && !in_array($planName, ['Pro', 'Enterprise'])) {
+        if ($isDynamic && !in_array($planName, ['Pro', 'Enterprise'])) {
             return redirect()->route('history')
-                ->with('error', 'Динамічні QR-коди доступні лише для Pro або Enterprise.');
+                ->with('error', 'flash.qr.dynamic_only_pro');
         }
 
         $data = $request->validate([
@@ -89,10 +91,10 @@ class QrCodeController extends Controller
             'is_dynamic' => 'boolean',
         ]);
 
-        $slug = \Str::uuid()->toString();
+        $slug = Str::uuid()->toString();
 
-        $finalContent = $data['is_dynamic']
-            ? url('/r/' . $slug)
+        $qrContent = $isDynamic
+            ? $this->buildDynamicUrl($slug)
             : $data['content'];
 
         $folder = public_path('qr_codes');
@@ -106,7 +108,7 @@ class QrCodeController extends Controller
             ->size($data['size'])
             ->color(...sscanf($data['color_dark'], "#%02x%02x%02x"))
             ->backgroundColor(...sscanf($data['color_light'], "#%02x%02x%02x"))
-            ->generate($finalContent, public_path($path));
+            ->generate($qrContent, public_path($path));
 
         QrCode::create([
             'user_id' => $user->id,
@@ -117,11 +119,11 @@ class QrCodeController extends Controller
             'size' => $data['size'],
             'color_dark' => $data['color_dark'],
             'color_light' => $data['color_light'],
-            'is_dynamic' => $data['is_dynamic'] ?? false,
-            'slug' => $data['is_dynamic'] ? $slug : null,
+            'is_dynamic' => $isDynamic,
+            'slug' => $isDynamic ? $slug : null,
         ]);
 
-        return redirect()->route('history')->with('success', 'QR-код збережено!');
+        return redirect()->route('history')->with('success', 'flash.qr.saved');
     }
 
     // 🔴 Видалення QR-коду
@@ -130,7 +132,7 @@ class QrCodeController extends Controller
         $qrCode = QrCode::find($id);
 
         if (!$qrCode) {
-            return redirect()->route('history')->with('error', 'QR-код не знайдено');
+            return redirect()->route('history')->with('error', 'flash.qr.not_found');
         }
 
         // Удаляем файл, если существует
@@ -142,7 +144,7 @@ class QrCodeController extends Controller
         $qrCode->delete();
 
         // ✅ Просто редиректим обратно на /history с сообщением
-        return redirect()->route('history')->with('success', 'QR-код видалено!');
+        return redirect()->route('history')->with('success', 'flash.qr.deleted');
     }
 
 
@@ -151,7 +153,7 @@ class QrCodeController extends Controller
         $qrCode = QrCode::where('slug', $slug)->firstOrFail();
 
         if ($qrCode->is_dynamic) {
-            $ip = $request->ip();
+            $ip = $this->getClientIp($request);
             $agent = new Agent();
             $agent->setUserAgent($request->userAgent());
             $referer = $request->headers->get('referer');
@@ -186,7 +188,13 @@ class QrCodeController extends Controller
             ]);
         }
 
-        return redirect()->away($qrCode->content);
+        $target = $qrCode->content;
+
+        if ($this->shouldRedirectAway($target)) {
+            return redirect()->away($target);
+        }
+
+        return response($target, 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
     }
 
     public function analytics($id)
@@ -226,7 +234,45 @@ class QrCodeController extends Controller
 
         QrCode::where('user_id', $user->id)->delete();
 
-        return back()->with('success', 'Усі QR-коди видалено успішно!');
+        return back()->with('success', 'flash.qr.deleted_all');
+    }
+
+    protected function buildDynamicUrl(string $slug): string
+    {
+        $baseUrl = config('app.public_url') ?: config('app.url');
+        return rtrim($baseUrl, '/') . '/r/' . $slug;
+    }
+
+    protected function getClientIp(Request $request): string
+    {
+        $candidates = [
+            $request->header('CF-Connecting-IP'),
+            $request->header('True-Client-IP'),
+        ];
+
+        $forwarded = $request->header('X-Forwarded-For');
+        if ($forwarded) {
+            $candidates[] = trim(explode(',', $forwarded)[0]);
+        }
+
+        $candidates[] = $request->ip();
+
+        foreach ($candidates as $ip) {
+            if (!empty($ip)) {
+                return $ip;
+            }
+        }
+
+        return $request->ip();
+    }
+
+    protected function shouldRedirectAway(string $content): bool
+    {
+        $scheme = parse_url($content, PHP_URL_SCHEME);
+        if (!$scheme) {
+            return false;
+        }
+
+        return in_array(strtolower($scheme), ['http', 'https', 'mailto', 'tel', 'sms', 'geo'], true);
     }
 }
-

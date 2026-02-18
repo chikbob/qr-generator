@@ -636,17 +636,20 @@ $bg-soft: #f8fafc;
             display: flex;
             flex-direction: column;
             gap: 1rem;
+            max-width: 560px;
+            width: 100%;
+            margin: 0 auto;
         }
 
         .result-textarea {
             width: 100%;
-            min-height: 110px;
-            padding: 16px 20px;
+            min-height: 90px;
+            padding: 14px 18px;
             border: 1.5px solid $border;
             border-radius: 14px;
             resize: vertical;
             font-family: inherit;
-            font-size: 1rem;
+            font-size: 0.95rem;
             line-height: 1.5;
             color: $text-secondary;
             background-color: $bg-soft;
@@ -664,6 +667,11 @@ $bg-soft: #f8fafc;
             gap: 1.2rem;
             flex-wrap: wrap;
             justify-content: flex-start;
+        }
+
+        .action-btn {
+            padding: 9px 16px;
+            font-size: 0.9rem;
         }
     }
 

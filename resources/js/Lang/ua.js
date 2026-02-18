@@ -1,4 +1,24 @@
 export default {
+    flash: {
+        auth: {
+            login_success: 'Успішний вхід!',
+            register_success: 'Реєстрація пройшла успішно!',
+        },
+        plan: {
+            updated: 'Тариф успішно змінено!',
+            payment_success: 'Оплата пройшла успішно! Тариф оновлено.',
+        },
+        feedback: {
+            sent: 'Ваше повідомлення успішно відправлено!',
+        },
+        qr: {
+            dynamic_only_pro: 'Динамічні QR-коди доступні лише для Pro або Enterprise.',
+            saved: 'QR-код збережено!',
+            deleted: 'QR-код видалено!',
+            not_found: 'QR-код не знайдено',
+            deleted_all: 'Усі QR-коди видалено успішно!',
+        },
+    },
     common: {
         go: 'Перейти',
         logout: 'Вийти',
@@ -108,6 +128,7 @@ export default {
         textPlaceholder: 'Введіть текст або посилання',
         size: 'Розмір',
         dynamic: 'Динамічний QR',
+        dynamicUnsupported: 'Динамічний QR працює лише для http(s), mailto, tel, sms, geo. Для Wi-Fi або контактів використовуйте статичний QR.',
         save: 'Зберегти',
         wifi: {
             ssid: 'Назва мережі (SSID)',

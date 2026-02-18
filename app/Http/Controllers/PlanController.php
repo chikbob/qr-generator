@@ -51,7 +51,7 @@ class PlanController extends Controller
         $user->plan()->associate($plan);
         $user->save();
 
-        return redirect()->back()->with('success', 'Тариф успешно изменён!');
+        return redirect()->back()->with('success', 'flash.plan.updated');
     }
 
     // Отображение страницы оплаты
@@ -81,6 +81,6 @@ class PlanController extends Controller
         $user->plan()->associate($plan);
         $user->save();
 
-        return redirect()->route('plans.index')->with('success', 'Оплата прошла успешно! Тариф обновлен.');
+        return redirect()->route('plans.index')->with('success', 'flash.plan.payment_success');
     }
 }

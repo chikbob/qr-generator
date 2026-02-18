@@ -40,7 +40,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('home')->with('success', 'Регистрация прошла успешно!');
+        return redirect()->route('home')->with('success', 'flash.auth.register_success');
     }
 }
-

@@ -3,8 +3,8 @@
         <div class="plans-container">
             <h2 style="margin: 2rem 0; font-size: 1.8rem">{{ t('plans.title') }}</h2>
 
-            <div v-if="flash.success" class="success-message">{{ flash.success }}</div>
-            <div v-if="flash.error" class="error-message">{{ flash.error }}</div>
+            <div v-if="flash.success" class="success-message">{{ tMaybe(flash.success) }}</div>
+            <div v-if="flash.error" class="error-message">{{ tMaybe(flash.error) }}</div>
 
             <div v-if="plans.length === 0" class="empty-plans">
                 {{ t('plans.noPlans') }}
@@ -42,10 +42,19 @@ import {router, usePage} from '@inertiajs/vue3'
 import {computed} from 'vue'
 import {useI18n} from '@/Lang/useI18n'
 
-const {t} = useI18n()
+const {t, tMaybe} = useI18n()
 
 const page = usePage()
-const plans = computed(() => page.props.plans || [])
+const plans = computed(() => {
+    const list = page.props.plans || []
+    const seen = new Set()
+    return list.filter((plan) => {
+        const key = (plan.name || '').toLowerCase()
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+    })
+})
 const flash = computed(() => page.props.flash || {})
 const currentPlanId = computed(() => page.props.currentPlanId)
 

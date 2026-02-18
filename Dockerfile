@@ -76,3 +76,8 @@ ENTRYPOINT ["docker-entrypoint.sh"]
 
 EXPOSE 80
 CMD ["apache2-foreground"]
+
+# Создаём папку для QR-кодов
+RUN mkdir -p /var/www/html/public/qr_codes \
+    && chown -R www-data:www-data /var/www/html/public/qr_codes \
+    && chmod -R 775 /var/www/html/public/qr_codes

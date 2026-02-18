@@ -20,7 +20,7 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
         $request->session()->regenerate();
 
-        return redirect()->intended(route('home'))->with('success', 'Успішний вхід!');
+        return redirect()->intended(route('home'))->with('success', 'flash.auth.login_success');
     }
 
 
@@ -33,4 +33,3 @@ class AuthenticatedSessionController extends Controller
         return redirect('/');
     }
 }
-

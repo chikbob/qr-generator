@@ -33,8 +33,8 @@
 
             <!-- Flash сообщения -->
             <div name="fade">
-                <div v-if="flash?.success" class="flash success">{{ flash.success }}</div>
-                <div v-if="flash?.error" class="flash error">{{ flash.error }}</div>
+                <div v-if="flash?.success" class="flash success">{{ tMaybe(flash.success) }}</div>
+                <div v-if="flash?.error" class="flash error">{{ tMaybe(flash.error) }}</div>
             </div>
 
             <!-- Пустая история -->
@@ -125,7 +125,7 @@ import {usePage, router} from "@inertiajs/vue3"
 import {ref, computed, watch} from "vue"
 import {useI18n} from '@/Lang/useI18n'
 
-const {t} = useI18n()
+const {t, tMaybe} = useI18n()
 
 const page = usePage()
 const codes = ref(page.props.codes || [])
@@ -237,12 +237,16 @@ const downloadFile = async (item, type = "png") => {
     try {
         const {default: QRCode} = await import("qrcode")
 
+        const qrContent = item.is_dynamic
+            ? (item.dynamic_url_full || item.dynamic_url || item.content)
+            : item.content
+
         if (type === "png") {
             const canvas = document.createElement("canvas")
-            await QRCode.toCanvas(canvas, item.content, {
+            await QRCode.toCanvas(canvas, qrContent, {
                 margin: 4,
                 scale: 8,
-                color: {dark: "#000000", light: "#ffffff"},
+                color: {dark: item.color_dark || "#000000", light: item.color_light || "#ffffff"},
                 width: item.size || 200,
             })
             const link = document.createElement("a")
@@ -253,10 +257,10 @@ const downloadFile = async (item, type = "png") => {
         }
 
         if (type === "svg") {
-            const svg = await QRCode.toString(item.content, {
+            const svg = await QRCode.toString(qrContent, {
                 type: "svg",
                 margin: 4,
-                color: {dark: "#000000", light: "#ffffff"},
+                color: {dark: item.color_dark || "#000000", light: item.color_light || "#ffffff"},
                 width: item.size || 200,
             })
             const blob = new Blob([svg], {type: "image/svg+xml"})
@@ -445,6 +449,13 @@ h2 {
     gap: 1.6rem;
     padding: 1.8rem 2rem 1.2rem;
     border-bottom: 2px solid lighten($color-primary-light, 10%);
+}
+
+.qr-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
 }
 
 .qr-preview img {
@@ -665,4 +676,3 @@ h2 {
     }
 }
 </style>
-

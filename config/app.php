@@ -56,6 +56,7 @@ return [
     */
 
     'url' => env('APP_URL', 'http://localhost'),
+    'public_url' => env('QR_PUBLIC_BASE_URL'),
 
     'asset_url' => env('ASSET_URL'),
 
@@ -83,7 +84,7 @@ return [
     |
     */
 
-    'locale' => 'en',
+    'locale' => env('APP_LOCALE', 'ru'),
 
     /*
     |--------------------------------------------------------------------------
@@ -96,7 +97,7 @@ return [
     |
     */
 
-    'fallback_locale' => 'en',
+    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
 
     /*
     |--------------------------------------------------------------------------

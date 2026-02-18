@@ -1,4 +1,24 @@
 export default {
+    flash: {
+        auth: {
+            login_success: 'Login successful!',
+            register_success: 'Registration completed successfully!',
+        },
+        plan: {
+            updated: 'Plan updated successfully!',
+            payment_success: 'Payment successful! Plan updated.',
+        },
+        feedback: {
+            sent: 'Your message has been sent successfully!',
+        },
+        qr: {
+            dynamic_only_pro: 'Dynamic QR codes are only available for Pro or Enterprise.',
+            saved: 'QR code saved!',
+            deleted: 'QR code deleted!',
+            not_found: 'QR code not found',
+            deleted_all: 'All QR codes deleted successfully!',
+        },
+    },
     common: {
         go: 'Go',
         logout: 'Logout',
@@ -108,6 +128,7 @@ export default {
         textPlaceholder: 'Enter text or URL',
         size: 'Size',
         dynamic: 'Dynamic QR',
+        dynamicUnsupported: 'Dynamic QR works only for links/actions: http(s), mailto, tel, sms, geo. Use a static QR for Wi-Fi or contacts.',
         save: 'Save',
         wifi: {
             ssid: 'Network name (SSID)',
@@ -355,4 +376,3 @@ export default {
         },
     },
 }
-

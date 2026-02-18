@@ -51,7 +51,7 @@ class FeedbackController extends Controller
         ]);
 
         return redirect()->route('feedback.show', $feedback->id)
-            ->with('success', 'Ваше повідомлення успішно відправлено!');
+            ->with('success', 'flash.feedback.sent');
     }
 
     public function show(Feedback $feedback)

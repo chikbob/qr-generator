@@ -23,6 +23,7 @@
                     v-model="qrData.text"
                     rows="4"
                     :placeholder="t('qrGenerator.textPlaceholder')"
+                    style="width: 441px;"
                 />
             </div>
 
@@ -176,13 +177,16 @@
                         <input
                             type="checkbox"
                             v-model="isDynamic"
-                            :disabled="!canUseDynamic"
+                            :disabled="!canUseDynamic || !dynamicCompatible"
                         />
                         {{ t('qrGenerator.dynamic') }}
                     </label>
 
                     <p v-if="!canUseDynamic" class="pro-hint">
                         {{ t('qrGenerator.dynamicProHint') }}
+                    </p>
+                    <p v-else-if="hasContent && !dynamicCompatible" class="pro-hint">
+                        {{ t('qrGenerator.dynamicUnsupported') }}
                     </p>
                 </div>
 
@@ -201,13 +205,13 @@
 </template>
 
 <script setup>
-import {ref, computed, watch} from 'vue'
+import { ref, computed, watch } from 'vue'
 import QRCode from 'qrcode'
-import {router, usePage} from '@inertiajs/vue3'
+import { router, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
-import {useI18n} from '@/Lang/useI18n'
+import { useI18n } from '@/Lang/useI18n'
 
-const {t} = useI18n()
+const { t } = useI18n()
 const page = usePage()
 
 const qrCanvas = ref(null)
@@ -224,9 +228,15 @@ const isDynamic = ref(false)
 const userPlanId = computed(() => page.props.auth?.user?.plan_id ?? 1)
 
 // Разрешаем dynamic для plan_id 2 и 3
-const canUseDynamic = computed(() => {
-    return [2, 3].includes(Number(userPlanId.value))
+const canUseDynamic = computed(() => [2, 3].includes(Number(userPlanId.value)))
+const dynamicCompatible = computed(() => {
+    if (!qrContent.value) return false
+    const match = qrContent.value.trim().match(/^([a-z][a-z0-9+.-]*):/i)
+    if (!match) return false
+    const scheme = match[1].toLowerCase()
+    return ['http', 'https', 'mailto', 'tel', 'sms', 'geo'].includes(scheme)
 })
+const hasContent = computed(() => Boolean(qrContent.value))
 
 const pdfFile = ref(null)
 const pdfFileName = ref('')
@@ -238,13 +248,20 @@ const uploadPdfFile = async (file) => {
 
     const response = await fetch('/api/upload-pdf', {
         method: 'POST',
-        body: formData
+        body: formData,
+        credentials: 'same-origin',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        },
     })
 
-    if (!response.ok) throw new Error('Ошибка загрузки')
+    if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(errorText || 'Ошибка загрузки')
+    }
 
     const data = await response.json()
-    return data.url // ссылка на загруженный файл
+    return data.url
 }
 
 const onPdfSelected = async (event) => {
@@ -268,125 +285,93 @@ const onPdfSelected = async (event) => {
 
 const qrData = ref({
     text: '',
-    wifi: {ssid: '', password: '', encryption: 'WPA'},
-    contact: {name: '', phone: '', email: '', company: '', website: '', address: ''},
-    email: {to: '', subject: '', body: ''},
-    phone: {number: ''},
-    sms: {number: '', message: ''},
-    location: {address: '', mapProvider: ''},
-    pdf: {document: ''}
+    wifi: { ssid: '', password: '', encryption: 'WPA' },
+    contact: { name: '', phone: '', email: '', company: '', website: '', address: '' },
+    email: { to: '', subject: '', body: '' },
+    phone: { number: '' },
+    sms: { number: '', message: '' },
+    location: { address: '', mapProvider: '' },
+    pdf: { document: '' }
 })
 
-/* ✅ QR появляется ТОЛЬКО если есть реальные данные */
+/* ✅ QR появляется только если есть данные */
 const qrContent = computed(() => {
-    if (qrType.value === 'wifi') {
-        const {ssid, password, encryption} = qrData.value.wifi
-        if (!ssid && !password) return ''
-        return `WIFI:T:${encryption};S:${ssid};P:${password};;`
-    }
-
-    if (qrType.value === 'contact') {
-        const c = qrData.value.contact
-        const hasData = Object.values(c).some(v => v && v.trim())
-        if (!hasData) return ''
-
-        return [
-            'BEGIN:VCARD',
-            'VERSION:3.0',
-            c.name && `FN:${c.name}`,
-            c.company && `ORG:${c.company}`,
-            c.phone && `TEL:${c.phone}`,
-            c.email && `EMAIL:${c.email}`,
-            c.website && `URL:${c.website}`,
-            c.address && `ADR:;;${c.address}`,
-            'END:VCARD',
-        ].filter(Boolean).join('\n')
-    }
-
-    if (qrType.value === 'email') {
-        const {to, subject, body} = qrData.value.email
-        if (!to) return ''
-
-        const params = new URLSearchParams()
-        if (subject) params.append('subject', subject)
-        if (body) params.append('body', body)
-
-        return `mailto:${to}${params.toString() ? '?' + params.toString() : ''}`
-    }
-
-    if (qrType.value === 'phone') {
-        return qrData.value.phone.number ? `tel:${qrData.value.phone.number}` : ''
-    }
-
-    if (qrType.value === 'sms') {
-        const {number, message} = qrData.value.sms
-        if (!number) return ''
-        return `sms:${number}?body=${encodeURIComponent(message)}`
-    }
-
-    if (qrType.value === 'location') {
-        const address = qrData.value.location.address.trim()
-        if (!address) return ''
-
-        const encodedAddress = encodeURIComponent(address)
-        if (qrData.value.location.mapProvider === 'yandex') {
-            return `https://yandex.ru/maps/?text=${encodedAddress}`
-        } else {
-            return `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`
+    switch (qrType.value) {
+        case 'wifi': {
+            const { ssid, password, encryption } = qrData.value.wifi
+            if (!ssid && !password) return ''
+            return `WIFI:T:${encryption};S:${ssid};P:${password};;`
         }
+        case 'contact': {
+            const c = qrData.value.contact
+            if (!Object.values(c).some(v => v?.trim())) return ''
+            return [
+                'BEGIN:VCARD',
+                'VERSION:3.0',
+                c.name && `FN:${c.name}`,
+                c.company && `ORG:${c.company}`,
+                c.phone && `TEL:${c.phone}`,
+                c.email && `EMAIL:${c.email}`,
+                c.website && `URL:${c.website}`,
+                c.address && `ADR:;;${c.address}`,
+                'END:VCARD'
+            ].filter(Boolean).join('\n')
+        }
+        case 'email': {
+            const { to, subject, body } = qrData.value.email
+            if (!to) return ''
+            const params = new URLSearchParams()
+            if (subject) params.append('subject', subject)
+            if (body) params.append('body', body)
+            return `mailto:${to}${params.toString() ? '?' + params.toString() : ''}`
+        }
+        case 'phone':
+            return qrData.value.phone.number ? `tel:${qrData.value.phone.number}` : ''
+        case 'sms': {
+            const { number, message } = qrData.value.sms
+            if (!number) return ''
+            return `sms:${number}?body=${encodeURIComponent(message)}`
+        }
+        case 'location': {
+            const address = qrData.value.location.address.trim()
+            if (!address) return ''
+            const encoded = encodeURIComponent(address)
+            return qrData.value.location.mapProvider === 'yandex'
+                ? `https://yandex.ru/maps/?text=${encoded}`
+                : `https://www.google.com/maps/search/?api=1&query=${encoded}`
+        }
+        case 'pdf':
+            return pdfFileUrl.value || ''
+        case 'text': {
+            const text = qrData.value.text.trim()
+            return text || ''
+        }
+        default:
+            return ''
     }
-
-    if (qrType.value === 'pdf') {
-        if (!pdfFileUrl.value) return ''
-        return pdfFileUrl.value
-    }
-
-    // Вот здесь добавляем проверку для текстового типа
-    if (qrType.value === 'text') {
-        const text = qrData.value.text.trim()
-        if (!text) return ''
-        return text
-    }
-
-    return ''
 })
-
-const openRoute = () => {
-    const {latitude, longitude} = qrData.value.location
-    if (!latitude || !longitude) return alert('Введите координаты')
-
-    // Открываем Google Maps с маршрутом из текущего местоположения к координатам
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(latitude)},${encodeURIComponent(longitude)}`
-    window.open(url, '_blank')
-}
 
 const generateQR = async () => {
     if (!qrCanvas.value || !qrContent.value) return
-
-    const CANVAS_SIZE = 260 // 👈 визуальный размер QR
-
+    const CANVAS_SIZE = 260
     await QRCode.toCanvas(qrCanvas.value, qrContent.value, {
         width: CANVAS_SIZE,
-        scale: size.value / 100, // 👈 масштаб вместо resize
-        color: {
-            dark: colorDark.value,
-            light: colorLight.value,
-        },
+        scale: size.value / 100,
+        color: { dark: colorDark.value, light: colorLight.value }
     })
-
 }
 
 watch([qrContent, size, colorDark, colorLight], generateQR)
 
 const saveToHistory = async () => {
-    const payloadData = qrType.value === 'text'
-        ? {text: qrData.value.text}
-        : qrData.value[qrType.value] ?? null
-
-    if (!qrContent.value) {
-        alert('Нет данных для генерации QR')
-        return
+    if (!qrContent.value) return alert('Нет данных для генерации QR')
+    if (canUseDynamic.value && isDynamic.value && !dynamicCompatible.value) {
+        return alert(t('qrGenerator.dynamicUnsupported'))
     }
+
+    const payloadData = qrType.value === 'text'
+        ? { text: qrData.value.text }
+        : qrData.value[qrType.value] ?? null
 
     try {
         await router.post('/qr', {
@@ -396,7 +381,7 @@ const saveToHistory = async () => {
             size: size.value,
             color_dark: colorDark.value,
             color_light: colorLight.value,
-            is_dynamic: canUseDynamic.value ? isDynamic.value : false,
+            is_dynamic: canUseDynamic.value ? isDynamic.value : false
         })
     } catch (error) {
         console.error('Ошибка сохранения QR:', error)
@@ -404,19 +389,14 @@ const saveToHistory = async () => {
     }
 }
 
-
+// Сбрасываем данные при смене типа QR
 watch(qrType, () => {
     Object.keys(qrData.value).forEach(key => {
-        if (typeof qrData.value[key] === 'string') {
-            qrData.value[key] = ''
-        } else {
-            Object.keys(qrData.value[key]).forEach(k => {
-                qrData.value[key][k] = ''
-            })
-        }
+        if (typeof qrData.value[key] === 'string') qrData.value[key] = ''
+        else Object.keys(qrData.value[key]).forEach(k => qrData.value[key][k] = '')
     })
+
     if (qrType.value !== 'pdf') {
-        // Сбрасываем pdf данные при смене типа
         pdfFile.value = null
         pdfFileName.value = ''
         if (pdfFileUrl.value) {
@@ -425,13 +405,16 @@ watch(qrType, () => {
         }
     }
 })
+
+watch(dynamicCompatible, (value) => {
+    if (!value) isDynamic.value = false
+})
 </script>
 
 <style scoped lang="scss">
 $accent: #e095bc;
 $accent-dark: #bd6592;
 $accent-soft: #fce7f3;
-
 $text-main: #0f172a;
 $text-secondary: #475569;
 $border: #e2e8f0;
@@ -440,12 +423,12 @@ $bg-soft: #f8fafc;
 .qr-generator {
     max-width: 820px;
     margin: 3rem auto;
-    padding: 3rem 2.5rem;
-    text-align: center;
+    padding: 3rem 2rem;
     background: #fff;
     border-radius: 24px;
-    box-shadow: 0 30px 60px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 30px 60px rgba(15, 23, 42, .08);
     color: $text-main;
+    text-align: center;
     font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 
     h1 {
@@ -461,24 +444,28 @@ $bg-soft: #f8fafc;
 .input-container {
     display: flex;
     justify-content: center;
-    margin-bottom: 1.4rem;
+    margin-bottom: 1.5rem;
 }
 
-$input-width: 480px;
+input, textarea {
+    min-width: 381px;
+}
+
+select {
+    min-width: 480px;
+}
 
 textarea,
 input,
 select {
-    width: 100%;
-    max-width: $input-width;
     padding: 14px 18px;
-    font-size: 0.95rem;
     border-radius: 16px;
     border: 1.5px solid $border;
+    font-size: .95rem;
     font-family: inherit;
     color: $text-main;
-    background: #ffffff;
-    transition: all 0.25s ease;
+    background: #fff;
+    transition: all .25s ease;
 
     &::placeholder {
         color: #94a3b8;
@@ -487,14 +474,14 @@ select {
     &:focus {
         outline: none;
         border-color: $accent;
-        box-shadow: 0 0 0 4px rgba(224, 149, 188, 0.25);
+        box-shadow: 0 0 0 4px rgba(224, 149, 188, .25);
         transform: translateY(-1px);
     }
 }
 
 select {
     appearance: none;
-    background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23bd6592' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 16px center / 16px;
+    background: #fff url("data:image/svg+xml,%3Csvg ... %3E") no-repeat right 16px center / 16px;
 }
 
 textarea {
@@ -502,27 +489,20 @@ textarea {
     min-height: 110px;
 }
 
-.wifi-form,
-.contact-form,
-.email-form,
-.phone-form,
-.sms-form,
-.location-form {
+.wifi-form, .contact-form, .email-form, .phone-form, .sms-form, .location-form {
     display: flex;
     flex-direction: column;
     gap: 14px;
     width: 100%;
-    max-width: $input-width;
+    max-width: 480px;
 }
-
-/* ===== QR RESULT ===== */
 
 .qr-container {
     margin-top: 3rem;
     padding: 2.5rem;
-    background: #ffffff;
+    background: #fff;
     border-radius: 24px;
-    box-shadow: 0 30px 60px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 30px 60px rgba(15, 23, 42, .08);
 }
 
 .qr-wrapper {
@@ -532,10 +512,9 @@ textarea {
 
     canvas {
         padding: 16px;
-        background: #ffffff;
         border-radius: 20px;
-        box-shadow: 0 20px 45px rgba(224, 149, 188, 0.35);
-        transition: transform 0.3s ease;
+        box-shadow: 0 20px 45px rgba(224, 149, 188, .35);
+        transition: transform .3s ease;
 
         &:hover {
             transform: scale(1.03);
@@ -550,20 +529,16 @@ textarea {
     align-items: center;
 }
 
-/* ===== SIZE ===== */
-
 .size-control {
     display: grid;
     grid-template-columns: auto 1fr auto;
-    align-items: center;
     gap: 14px;
     width: 100%;
-    max-width: $input-width;
+    align-items: center;
 
     span {
         font-weight: 600;
-        font-size: 0.9rem;
-        white-space: nowrap;
+        font-size: .9rem;
     }
 }
 
@@ -576,9 +551,9 @@ textarea {
 
 input[type="range"] {
     accent-color: $accent;
+    width: 100%;
+    min-width: 0;
 }
-
-/* ===== COLORS ===== */
 
 .color-controls {
     display: flex;
@@ -588,40 +563,45 @@ input[type="range"] {
         display: flex;
         align-items: center;
         gap: 8px;
-        font-size: 0.9rem;
+        font-size: .9rem;
         font-weight: 600;
     }
 }
 
 input[type="color"] {
+    -webkit-appearance: none;
+    appearance: none;
     width: 42px;
     height: 42px;
     padding: 0;
+    min-width: 42px;
     border-radius: 12px;
     border: 1.5px solid $border;
     cursor: pointer;
 }
 
-/* ===== DYNAMIC ===== */
-
 .checkbox {
-    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    width: 100%;
+    max-width: 480px;
+    font-size: .9rem;
     font-weight: 500;
     color: $text-secondary;
 
     input {
-        margin-right: 6px;
+        margin: 0;
         transform: scale(1.15);
         accent-color: $accent;
     }
 }
 
 .pro-hint {
-    font-size: 0.85rem;
+    font-size: .85rem;
     color: #94a3b8;
 }
-
-/* ===== ACTIONS ===== */
 
 .action-buttons {
     margin-top: 2.5rem;
@@ -634,18 +614,16 @@ input[type="color"] {
     border: none;
     font-weight: 700;
     font-size: 1rem;
-    color: #ffffff;
+    color: #fff;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 14px 32px rgba(224, 149, 188, 0.45);
+    box-shadow: 0 14px 32px rgba(224, 149, 188, .45);
+    transition: all .3s ease;
 
     &:hover {
         transform: translateY(-2px) scale(1.05);
-        box-shadow: 0 20px 50px rgba(224, 149, 188, 0.6);
+        box-shadow: 0 20px 50px rgba(224, 149, 188, .6);
     }
 }
-
-/* ===== EMPTY ===== */
 
 .placeholder {
     margin-top: 4rem;
@@ -658,12 +636,10 @@ input[type="color"] {
     .qr-generator {
         padding: 2rem 1.2rem;
     }
-
     .color-controls {
         flex-direction: column;
         align-items: center;
     }
-
     .size-control {
         grid-template-columns: 1fr;
         gap: 8px;
