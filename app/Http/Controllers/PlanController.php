@@ -16,8 +16,8 @@ class PlanController extends Controller
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
-            // Можно добавить другие нужные поля, например, plan_id
             'plan_id' => $user->plan_id ?? null,
+            'is_admin' => (bool) $user->is_admin,
         ] : null;
     }
 

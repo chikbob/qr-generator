@@ -10,6 +10,7 @@
                 <Link href="/profile" class="nav-link">{{ t('header.profile') }}</Link>
                 <Link href="/plans" class="nav-link">{{ t('header.plans') }}</Link>
                 <Link href="/contacts" class="nav-link">{{ t('header.contacts') }}</Link>
+                <Link v-if="user?.is_admin" href="/admin" class="nav-link">{{ t('header.admin') }}</Link>
 
                 <form @submit.prevent="logout">
                     <button type="submit" class="logout-btn">{{ t('header.logout') }}</button>

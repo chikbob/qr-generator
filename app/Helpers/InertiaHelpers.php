@@ -12,9 +12,17 @@ class InertiaHelpers
      */
     public static function inertiaWithUser(string $component, array $props = [])
     {
+        $user = Auth::user();
+
         return Inertia::render($component, array_merge([
             'auth' => [
-                'user' => Auth::user(),
+                'user' => $user ? [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'plan_id' => $user->plan_id,
+                    'is_admin' => (bool) $user->is_admin,
+                ] : null,
             ],
         ], $props));
     }

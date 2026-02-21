@@ -35,9 +35,53 @@ export default {
         profile: 'Профіль',
         plans: 'Тарифи',
         contacts: 'Контакти',
+        admin: 'Адмін',
         login: 'Увійти',
         register: 'Реєстрація',
         logout: 'Вийти',
+    },
+
+    admin: {
+        nav: {
+            panel: 'Панель керування',
+            dashboard: 'Дашборд',
+            toSite: 'На сайт',
+        },
+        dashboard: {
+            title: 'Адмін панель',
+            subtitle: 'Зона адміністрування. Ви перебуваєте в режимі керування системою.',
+            topCountriesTitle: 'Топ країн за скануваннями',
+            recentScansTitle: 'Останні сканування',
+            kpis: {
+                totalScans: 'Усього сканувань',
+                scansToday: 'Сканувань сьогодні',
+                dynamicShare: 'Частка динамічних QR',
+                usersToday: 'Користувачі за день',
+            },
+        },
+        common: {
+            backToTables: 'До таблиць',
+            backToTable: 'Назад до таблиці',
+            newRecord: 'Новий запис',
+            actions: 'Дії',
+            edit: 'Редагувати',
+            delete: 'Видалити',
+            noRecords: 'Немає записів',
+            confirmDelete: 'Видалити запис?',
+            create: 'Створити',
+            save: 'Зберегти',
+        },
+        form: {
+            createTitle: 'Новий запис',
+            editTitle: 'Редагування',
+        },
+        tables: {
+            users: 'Користувачі',
+            plans: 'Тарифні плани',
+            qr_codes: 'QR-коди',
+            qr_scans: 'Сканування QR',
+            feedback: 'Звернення',
+        },
     },
 
     home: {

@@ -66,6 +66,7 @@
 import {Link} from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import {useI18n} from "@/Lang/useI18n.js";
+import {formatDateUtcPlus3} from '@/utils/datetime'
 
 const {t} = useI18n()
 
@@ -74,11 +75,7 @@ defineProps({
 })
 
 const formatDate = (dateStr) => {
-    return new Date(dateStr).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-    })
+    return formatDateUtcPlus3(dateStr)
 }
 </script>
 

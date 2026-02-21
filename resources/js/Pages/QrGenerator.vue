@@ -23,7 +23,7 @@
                     v-model="qrData.text"
                     rows="4"
                     :placeholder="t('qrGenerator.textPlaceholder')"
-                    style="width: 441px;"
+                    style="width: 480px;"
                 />
             </div>
 
@@ -445,14 +445,21 @@ $bg-soft: #f8fafc;
     display: flex;
     justify-content: center;
     margin-bottom: 1.5rem;
+    width: 100%;
 }
 
 input, textarea {
-    min-width: 381px;
+    width: 100%;
+    max-width: 480px;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 select {
-    min-width: 480px;
+    width: 100%;
+    max-width: 480px;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 textarea,
@@ -503,6 +510,9 @@ textarea {
     background: #fff;
     border-radius: 24px;
     box-shadow: 0 30px 60px rgba(15, 23, 42, .08);
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .qr-wrapper {
@@ -527,6 +537,9 @@ textarea {
     flex-direction: column;
     gap: 1.6rem;
     align-items: center;
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
 }
 
 .size-control {
@@ -558,6 +571,8 @@ input[type="range"] {
 .color-controls {
     display: flex;
     gap: 1.4rem;
+    flex-wrap: wrap;
+    justify-content: center;
 
     label {
         display: flex;
@@ -601,10 +616,15 @@ input[type="color"] {
 .pro-hint {
     font-size: .85rem;
     color: #94a3b8;
+    margin: 0;
+    line-height: 1.45;
+    max-width: 560px;
 }
 
 .action-buttons {
     margin-top: 2.5rem;
+    display: flex;
+    justify-content: center;
 }
 
 .btn.save {
@@ -636,6 +656,9 @@ input[type="color"] {
     .qr-generator {
         padding: 2rem 1.2rem;
     }
+    .qr-container {
+        padding: 1.4rem 1rem;
+    }
     .color-controls {
         flex-direction: column;
         align-items: center;
@@ -644,6 +667,9 @@ input[type="color"] {
         grid-template-columns: 1fr;
         gap: 8px;
         text-align: center;
+    }
+    .checkbox {
+        justify-content: center;
     }
 }
 </style>

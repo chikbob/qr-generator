@@ -19,6 +19,8 @@ class QrCodeController extends Controller
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
+            'plan_id' => $user->plan_id,
+            'is_admin' => (bool) $user->is_admin,
         ] : null;
     }
 
@@ -58,6 +60,8 @@ class QrCodeController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
+                    'plan_id' => $user->plan_id,
+                    'is_admin' => (bool) $user->is_admin,
                     'plan' => $user->plan?->name ?? 'Free',
                 ],
             ],
@@ -210,6 +214,7 @@ class QrCodeController extends Controller
             'ip' => $scan->ip,
             'country' => $scan->country,
             'city' => $scan->city,
+            'location_source' => $this->resolveLocationSource($scan->ip, $scan->country, $scan->city),
             'browser' => $scan->browser,
             'device' => $scan->device,
             'referer' => $scan->referer,
@@ -264,6 +269,35 @@ class QrCodeController extends Controller
         }
 
         return $request->ip();
+    }
+
+    protected function resolveLocationSource(?string $ip, ?string $country, ?string $city): string
+    {
+        if ($this->isPrivateOrReservedIp($ip)) {
+            return 'local_proxy';
+        }
+
+        if ($this->isUnknownLocationValue($country) && $this->isUnknownLocationValue($city)) {
+            return 'unknown';
+        }
+
+        return 'geo';
+    }
+
+    protected function isPrivateOrReservedIp(?string $ip): bool
+    {
+        if (!$ip || !filter_var($ip, FILTER_VALIDATE_IP)) {
+            return false;
+        }
+
+        return !filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE);
+    }
+
+    protected function isUnknownLocationValue(?string $value): bool
+    {
+        $normalized = trim((string) $value);
+
+        return $normalized === '' || in_array($normalized, ['Невідомо', 'Неизвестно', 'Unknown', 'unknown', '—', '-'], true);
     }
 
     protected function shouldRedirectAway(string $content): bool

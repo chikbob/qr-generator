@@ -15,6 +15,8 @@ class ProfileController extends Controller
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
+            'plan_id' => $user->plan_id,
+            'is_admin' => (bool) $user->is_admin,
             'plan' => $user->plan ? [
                 'id' => $user->plan->id,
                 'name' => $user->plan->name,

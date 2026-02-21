@@ -5,7 +5,7 @@
 
             <div class="qr-summary">
                 <img :src="qrCode.image_path" class="qr-image"/>
-                <div>
+                <div class="summary-info">
                     <p><strong>{{ t('qrAnalytics.content') }}:</strong> {{ qrCode.content }}</p>
                     <p><strong>{{ t('qrAnalytics.totalScans') }}:</strong> {{ qrCode.scans_count }}</p>
                     <p><strong>{{ t('qrAnalytics.createdAt') }}:</strong> {{ formatDate(qrCode.created_at) }}</p>
@@ -32,7 +32,11 @@
                 <tbody>
                 <tr v-for="scan in scans" :key="scan.id">
                     <td>{{ formatDate(scan.created_at) }}</td>
-                    <td>{{ scan.country || '—' }}</td>
+                    <td class="scan-location">
+                        <span>{{ scan.country || '—' }}</span>
+                        <span v-if="scan.location_source === 'local_proxy'" class="location-badge">Local/Proxy</span>
+                        <span v-else-if="scan.location_source === 'unknown'" class="location-badge unknown">Geo unavailable</span>
+                    </td>
                     <td>{{ scan.city || '—' }}</td>
                     <td>{{ scan.browser || '—' }}</td>
                     <td>{{ scan.device || '—' }}</td>
@@ -50,13 +54,14 @@ import {onMounted, ref} from "vue"
 import {usePage} from "@inertiajs/vue3"
 import {useI18n} from "@/Lang/useI18n"
 import Chart from "chart.js/auto"
+import {formatDateTimeUtcPlus3, getDateKeyUtcPlus3} from '@/utils/datetime'
 
 const {t} = useI18n()
 const {props} = usePage()
 const qrCode = props.qrCode
 const scans = props.scans
 
-const formatDate = (d) => new Date(d).toLocaleString()
+const formatDate = (d) => formatDateTimeUtcPlus3(d)
 
 const chart = ref(null)
 onMounted(() => {
@@ -64,7 +69,7 @@ onMounted(() => {
     const dailyCounts = {}
 
     scans.forEach(scan => {
-        const day = new Date(scan.created_at).toLocaleDateString()
+        const day = getDateKeyUtcPlus3(scan.created_at)
         dailyCounts[day] = (dailyCounts[day] || 0) + 1
     })
 
@@ -150,9 +155,12 @@ h2, h3 {
     font-weight: 700;
     line-height: 1.5;
     user-select: text;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 
     p {
         margin-bottom: 0.8rem;
+        max-width: 100%;
     }
 
     p strong {
@@ -162,7 +170,6 @@ h2, h3 {
 }
 
 .chart-container {
-    width: 100%;
     margin-bottom: 3.5rem;
     user-select: none;
     border-radius: 24px;
@@ -209,6 +216,30 @@ h2, h3 {
             background-color: #f9d6e4;
         }
     }
+}
+
+.scan-location {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+}
+
+.location-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: #eef2ff;
+    color: #3730a3;
+}
+
+.location-badge.unknown {
+    background: #fff7ed;
+    color: #9a3412;
 }
 
 @media (max-width: 650px) {

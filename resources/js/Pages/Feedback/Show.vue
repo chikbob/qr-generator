@@ -42,16 +42,14 @@
 import {Link} from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import {computed} from 'vue'
+import {formatDateTimeUtcPlus3} from '@/utils/datetime'
 
 const props = defineProps({
     feedback: Object,
 })
 
 const formatDate = (dateStr) => {
-    return new Date(dateStr).toLocaleString(undefined, {
-        dateStyle: 'long',
-        timeStyle: 'short',
-    })
+    return formatDateTimeUtcPlus3(dateStr)
 }
 
 const formattedMessage = computed(() =>

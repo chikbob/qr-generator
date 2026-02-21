@@ -3,7 +3,9 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "vite build",
+        "tunnel": "./scripts/start_quick_tunnel.sh",
+        "tunnel:live": "./scripts/start_live_sync_tunnel.sh"
     },
     "devDependencies": {
         "@inertiajs/vue3": "^1.0.0",

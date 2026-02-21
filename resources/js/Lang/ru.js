@@ -35,9 +35,53 @@ export default {
         profile: 'Профиль',
         plans: 'Тарифы',
         contacts: 'Контакты',
+        admin: 'Админ',
         login: 'Войти',
         register: 'Регистрация',
         logout: 'Выйти',
+    },
+
+    admin: {
+        nav: {
+            panel: 'Панель управления',
+            dashboard: 'Дашборд',
+            toSite: 'На сайт',
+        },
+        dashboard: {
+            title: 'Админ панель',
+            subtitle: 'Зона администрирования. Вы находитесь в режиме управления системой.',
+            topCountriesTitle: 'Топ стран по сканированиям',
+            recentScansTitle: 'Последние сканирования',
+            kpis: {
+                totalScans: 'Всего сканирований',
+                scansToday: 'Сканирований сегодня',
+                dynamicShare: 'Доля динамических QR',
+                usersToday: 'Пользователи за день',
+            },
+        },
+        common: {
+            backToTables: 'К таблицам',
+            backToTable: 'Назад к таблице',
+            newRecord: 'Новая запись',
+            actions: 'Действия',
+            edit: 'Изменить',
+            delete: 'Удалить',
+            noRecords: 'Нет записей',
+            confirmDelete: 'Удалить запись?',
+            create: 'Создать',
+            save: 'Сохранить',
+        },
+        form: {
+            createTitle: 'Новая запись',
+            editTitle: 'Редактирование',
+        },
+        tables: {
+            users: 'Пользователи',
+            plans: 'Тарифные планы',
+            qr_codes: 'QR-коды',
+            qr_scans: 'Сканирования QR',
+            feedback: 'Обращения',
+        },
     },
 
     home: {

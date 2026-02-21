@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ProfileController;
@@ -62,6 +63,16 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/qr/{id}/analytics', [QrCodeController::class, 'analytics'])->name('qr.analytics');
 
     Route::delete('/qr/delete-all', [QrCodeController::class, 'deleteAll'])->name('qr.deleteAll');
+});
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', [AdminController::class, 'index'])->name('index');
+    Route::get('/{table}/create', [AdminController::class, 'create'])->name('create');
+    Route::post('/{table}', [AdminController::class, 'store'])->name('store');
+    Route::get('/{table}/{id}/edit', [AdminController::class, 'edit'])->name('edit');
+    Route::patch('/{table}/{id}', [AdminController::class, 'update'])->name('update');
+    Route::delete('/{table}/{id}', [AdminController::class, 'destroy'])->name('destroy');
+    Route::get('/{table}', [AdminController::class, 'table'])->name('table');
 });
 
 // 🔗 редирект динамических QR (публичный)

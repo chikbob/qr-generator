@@ -35,9 +35,53 @@ export default {
         profile: 'Profile',
         plans: 'Plans',
         contacts: 'Contacts',
+        admin: 'Admin',
         login: 'Login',
         register: 'Register',
         logout: 'Logout',
+    },
+
+    admin: {
+        nav: {
+            panel: 'Control Panel',
+            dashboard: 'Dashboard',
+            toSite: 'Go to site',
+        },
+        dashboard: {
+            title: 'Admin Panel',
+            subtitle: 'Administration zone. You are in system management mode.',
+            topCountriesTitle: 'Top countries by scans',
+            recentScansTitle: 'Recent scans',
+            kpis: {
+                totalScans: 'Total scans',
+                scansToday: 'Scans today',
+                dynamicShare: 'Dynamic QR share',
+                usersToday: 'Users today',
+            },
+        },
+        common: {
+            backToTables: 'Back to tables',
+            backToTable: 'Back to table',
+            newRecord: 'New record',
+            actions: 'Actions',
+            edit: 'Edit',
+            delete: 'Delete',
+            noRecords: 'No records',
+            confirmDelete: 'Delete this record?',
+            create: 'Create',
+            save: 'Save',
+        },
+        form: {
+            createTitle: 'Create record',
+            editTitle: 'Edit record',
+        },
+        tables: {
+            users: 'Users',
+            plans: 'Tariff plans',
+            qr_codes: 'QR codes',
+            qr_scans: 'QR scans',
+            feedback: 'Feedback',
+        },
     },
 
     home: {

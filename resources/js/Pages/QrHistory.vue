@@ -70,7 +70,7 @@
                             <span class="stat"><strong>📈 {{
                                     t('qrHistory.stats.views')
                                 }}:</strong> {{ item.scans_count ?? 0 }}</span>
-                            <a :href="item.dynamic_url" target="_blank" class="visit-link">🔗
+                            <a :href="item.dynamic_url_full || item.dynamic_url" target="_blank" rel="noopener noreferrer" class="visit-link">🔗
                                 {{ t('qrHistory.stats.visit') }}</a>
                         </div>
 
@@ -124,6 +124,7 @@ import AppLayout from "@/Layouts/AppLayout.vue"
 import {usePage, router} from "@inertiajs/vue3"
 import {ref, computed, watch} from "vue"
 import {useI18n} from '@/Lang/useI18n'
+import {formatDateTimeUtcPlus3} from '@/utils/datetime'
 
 const {t, tMaybe} = useI18n()
 
@@ -230,7 +231,7 @@ const formatQrDescription = (item) => {
 }
 
 const truncateContent = (text) => (text.length > 50 ? text.substring(0, 50) + "..." : text)
-const formatDate = (d) => new Date(d).toLocaleString()
+const formatDate = (d) => formatDateTimeUtcPlus3(d)
 const openAnalytics = (id) => router.visit(`/qr/${id}/analytics`)
 
 const downloadFile = async (item, type = "png") => {
