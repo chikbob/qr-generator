@@ -41,6 +41,13 @@ export default {
         logout: 'Logout',
     },
 
+    footer: {
+        brand: 'QR Code Generator',
+        contacts: 'Contacts',
+        plans: 'Plans',
+        privacy: 'Privacy',
+    },
+
     admin: {
         nav: {
             panel: 'Control Panel',

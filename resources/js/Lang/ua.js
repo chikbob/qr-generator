@@ -41,6 +41,13 @@ export default {
         logout: 'Вийти',
     },
 
+    footer: {
+        brand: 'QR Code Generator',
+        contacts: 'Контакти',
+        plans: 'Тарифи',
+        privacy: 'Конфіденційність',
+    },
+
     admin: {
         nav: {
             panel: 'Панель керування',

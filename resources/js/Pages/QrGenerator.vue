@@ -13,7 +13,7 @@
                     <option value="phone">{{ t('qrGenerator.type.phone') }}</option>
                     <option value="sms">{{ t('qrGenerator.type.sms') }}</option>
                     <option value="location">{{ t('qrGenerator.type.location') }}</option>
-                    <option value="pdf">{{ t('qrGenerator.type.pdf') }}</option>
+                    <!--   <option value="pdf">{{ t('qrGenerator.type.pdf') }}</option> -->
                 </select>
             </div>
 
@@ -131,14 +131,14 @@
             </div>
 
             <!-- PDF -->
-            <div v-if="qrType === 'pdf'" class="input-container">
+            <!-- <div v-if="qrType === 'pdf'" class="input-container">
                 <input
                     type="file"
                     accept="application/pdf"
                     @change="onPdfSelected"
                 />
                 <div v-if="pdfFileName">{{ pdfFileName }}</div>
-            </div>
+            </div> -->
 
             <!-- QR RESULT -->
             <div v-if="qrContent" class="qr-container">
@@ -205,13 +205,13 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import {ref, computed, watch} from 'vue'
 import QRCode from 'qrcode'
-import { router, usePage } from '@inertiajs/vue3'
+import {router, usePage} from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
-import { useI18n } from '@/Lang/useI18n'
+import {useI18n} from '@/Lang/useI18n'
 
-const { t } = useI18n()
+const {t} = useI18n()
 const page = usePage()
 
 const qrCanvas = ref(null)
@@ -285,20 +285,20 @@ const onPdfSelected = async (event) => {
 
 const qrData = ref({
     text: '',
-    wifi: { ssid: '', password: '', encryption: 'WPA' },
-    contact: { name: '', phone: '', email: '', company: '', website: '', address: '' },
-    email: { to: '', subject: '', body: '' },
-    phone: { number: '' },
-    sms: { number: '', message: '' },
-    location: { address: '', mapProvider: '' },
-    pdf: { document: '' }
+    wifi: {ssid: '', password: '', encryption: 'WPA'},
+    contact: {name: '', phone: '', email: '', company: '', website: '', address: ''},
+    email: {to: '', subject: '', body: ''},
+    phone: {number: ''},
+    sms: {number: '', message: ''},
+    location: {address: '', mapProvider: ''},
+    pdf: {document: ''}
 })
 
 /* ✅ QR появляется только если есть данные */
 const qrContent = computed(() => {
     switch (qrType.value) {
         case 'wifi': {
-            const { ssid, password, encryption } = qrData.value.wifi
+            const {ssid, password, encryption} = qrData.value.wifi
             if (!ssid && !password) return ''
             return `WIFI:T:${encryption};S:${ssid};P:${password};;`
         }
@@ -318,7 +318,7 @@ const qrContent = computed(() => {
             ].filter(Boolean).join('\n')
         }
         case 'email': {
-            const { to, subject, body } = qrData.value.email
+            const {to, subject, body} = qrData.value.email
             if (!to) return ''
             const params = new URLSearchParams()
             if (subject) params.append('subject', subject)
@@ -328,7 +328,7 @@ const qrContent = computed(() => {
         case 'phone':
             return qrData.value.phone.number ? `tel:${qrData.value.phone.number}` : ''
         case 'sms': {
-            const { number, message } = qrData.value.sms
+            const {number, message} = qrData.value.sms
             if (!number) return ''
             return `sms:${number}?body=${encodeURIComponent(message)}`
         }
@@ -357,7 +357,7 @@ const generateQR = async () => {
     await QRCode.toCanvas(qrCanvas.value, qrContent.value, {
         width: CANVAS_SIZE,
         scale: size.value / 100,
-        color: { dark: colorDark.value, light: colorLight.value }
+        color: {dark: colorDark.value, light: colorLight.value}
     })
 }
 
@@ -370,7 +370,7 @@ const saveToHistory = async () => {
     }
 
     const payloadData = qrType.value === 'text'
-        ? { text: qrData.value.text }
+        ? {text: qrData.value.text}
         : qrData.value[qrType.value] ?? null
 
     try {
@@ -598,16 +598,16 @@ input[type="color"] {
 .checkbox {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     gap: 8px;
-    width: 100%;
-    max-width: 480px;
+    min-width: 640px;
     font-size: .9rem;
     font-weight: 500;
     color: $text-secondary;
 
     input {
         margin: 0;
+        max-width: 30px;
         transform: scale(1.15);
         accent-color: $accent;
     }

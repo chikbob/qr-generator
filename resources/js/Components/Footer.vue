@@ -2,21 +2,23 @@
     <footer class="app-footer">
         <div class="footer-inner">
             <div class="footer-left">
-                <strong>QR Code Generator</strong>
+                <strong>{{ t('footer.brand') }}</strong>
                 <span>© {{ currentYear }}</span>
             </div>
 
             <div class="footer-right">
-                <a href="/contacts">Contacts</a>
-                <a href="/plans">Plans</a>
-                <a href="/privacy">Privacy</a>
+                <a href="/contacts">{{ t('footer.contacts') }}</a>
+                <a href="/plans">{{ t('footer.plans') }}</a>
+                <a href="/privacy">{{ t('footer.privacy') }}</a>
             </div>
         </div>
     </footer>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
+
+const { t } = inject('i18n')
 const currentYear = computed(() => new Date().getFullYear())
 </script>
 
