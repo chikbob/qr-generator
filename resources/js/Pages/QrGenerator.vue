@@ -205,7 +205,7 @@
 </template>
 
 <script setup>
-import {ref, computed, watch} from 'vue'
+import {ref, computed, watch, nextTick} from 'vue'
 import QRCode from 'qrcode'
 import {router, usePage} from '@inertiajs/vue3'
 import AppLayout from '@/Layouts/AppLayout.vue'
@@ -294,6 +294,25 @@ const qrData = ref({
     pdf: {document: ''}
 })
 
+const normalizeUrlLikeText = (value) => {
+    const text = (value || '').trim()
+    if (!text) return ''
+
+    if (/^[a-z][a-z0-9+.-]*:/i.test(text)) {
+        return text
+    }
+
+    if (/\s/.test(text)) {
+        return text
+    }
+
+    if (text.includes('.') || text.startsWith('www.')) {
+        return `https://${text}`
+    }
+
+    return text
+}
+
 /* ✅ QR появляется только если есть данные */
 const qrContent = computed(() => {
     switch (qrType.value) {
@@ -344,7 +363,7 @@ const qrContent = computed(() => {
             return pdfFileUrl.value || ''
         case 'text': {
             const text = qrData.value.text.trim()
-            return text || ''
+            return normalizeUrlLikeText(text)
         }
         default:
             return ''
@@ -352,7 +371,12 @@ const qrContent = computed(() => {
 })
 
 const generateQR = async () => {
-    if (!qrCanvas.value || !qrContent.value) return
+    if (!qrContent.value) return
+    if (!qrCanvas.value) {
+        await nextTick()
+    }
+    if (!qrCanvas.value) return
+
     const CANVAS_SIZE = 260
     await QRCode.toCanvas(qrCanvas.value, qrContent.value, {
         width: CANVAS_SIZE,
@@ -361,7 +385,16 @@ const generateQR = async () => {
     })
 }
 
-watch([qrContent, size, colorDark, colorLight], generateQR)
+watch(qrContent, async (value) => {
+    if (!value) return
+    await nextTick()
+    await generateQR()
+}, {flush: 'post'})
+
+watch([size, colorDark, colorLight], () => {
+    if (!qrContent.value) return
+    void generateQR()
+})
 
 const saveToHistory = async () => {
     if (!qrContent.value) return alert('Нет данных для генерации QR')

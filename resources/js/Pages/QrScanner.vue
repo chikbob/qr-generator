@@ -82,8 +82,12 @@
               rows="4"
           ></textarea>
                     <div class="result-actions">
-                        <button @click="copyResult" class="action-btn copy">
-                            <svg viewBox="0 0 24 24">
+                        <button
+                            style="width: fit-content; display: flex; align-items: center; margin: 0 0 0 5px"
+                            @click="copyResult"
+                            class="action-btn copy"
+                        >
+                            <svg viewBox="0 0 24 24" style="width: 24px; margin: 0 5px 0 0;">
                                 <path
                                     d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"
                                 />
@@ -94,16 +98,21 @@
                             v-if="isValidUrl(result)"
                             @click="openUrl"
                             class="action-btn open"
+                            style="width: fit-content; display: flex; align-items: center"
                         >
-                            <svg viewBox="0 0 24 24">
+                            <svg viewBox="0 0 24 24" style="width: 24px; margin: 0 5px 0 0;">
                                 <path
                                     d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"
                                 />
                             </svg>
                             {{ $t('qrScanner.openButton') }}
                         </button>
-                        <button @click="clearResult" class="action-btn clear">
-                            <svg viewBox="0 0 24 24">
+                        <button
+                            @click="clearResult"
+                            class="action-btn clear"
+                            style="width: fit-content; display: flex; align-items: center"
+                        >
+                            <svg viewBox="0 0 24 24" style="width: 24px; margin: 0 5px 0 0;">
                                 <path
                                     d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6Z"
                                 />

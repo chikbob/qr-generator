@@ -38,17 +38,17 @@
             </div>
 
             <!-- Пустая история -->
-            <div v-if="filteredCodes.length === 0" class="empty-history">
+            <div v-if="codes.length === 0" class="empty-history">
                 <p>{{ t('qrHistory.empty.title') }}</p>
                 <small>{{ t('qrHistory.empty.subtitle') }}</small>
             </div>
 
             <!-- Список кодов -->
             <div v-else class="history-grid">
-                <div v-for="item in filteredCodes" :key="item.id" class="history-card">
+                <div v-for="item in codes" :key="item.id" class="history-card">
                     <div class="qr-header">
                         <div class="qr-preview">
-                            <img :src="item.image_path" :alt="item.content"/>
+                            <img :src="getPreviewSrc(item)" :alt="item.content"/>
                         </div>
                         <div class="qr-meta">
                             <p class="content-text" :title="item.content">
@@ -70,7 +70,7 @@
                             <span class="stat"><strong>📈 {{
                                     t('qrHistory.stats.views')
                                 }}:</strong> {{ item.scans_count ?? 0 }}</span>
-                            <a :href="item.dynamic_url_full || item.dynamic_url" target="_blank" rel="noopener noreferrer" class="visit-link">🔗
+                            <a :href="resolveDynamicUrl(item, true)" target="_blank" rel="noopener noreferrer" class="visit-link">🔗
                                 {{ t('qrHistory.stats.visit') }}</a>
                         </div>
 
@@ -98,6 +98,29 @@
                 </div>
             </div>
 
+            <div v-if="pagination.last_page > 1" class="pagination">
+                <button
+                    class="page-btn"
+                    :disabled="pagination.current_page <= 1"
+                    @click="goToPage(pagination.current_page - 1)"
+                >
+                    ← Prev
+                </button>
+
+                <span class="page-meta">
+                    {{ pagination.current_page }} / {{ pagination.last_page }}
+                    ({{ pagination.total }})
+                </span>
+
+                <button
+                    class="page-btn"
+                    :disabled="pagination.current_page >= pagination.last_page"
+                    @click="goToPage(pagination.current_page + 1)"
+                >
+                    Next →
+                </button>
+            </div>
+
             <!-- Модальное окно для удаления всех QR-кодов (закомментировано) -->
             <!--
             <div
@@ -122,7 +145,7 @@
 <script setup>
 import AppLayout from "@/Layouts/AppLayout.vue"
 import {usePage, router} from "@inertiajs/vue3"
-import {ref, computed, watch} from "vue"
+import {ref, watch} from "vue"
 import {useI18n} from '@/Lang/useI18n'
 import {formatDateTimeUtcPlus3} from '@/utils/datetime'
 
@@ -131,36 +154,28 @@ const {t, tMaybe} = useI18n()
 const page = usePage()
 const codes = ref(page.props.codes || [])
 const flash = ref(page.props.flash || {})
+const pagination = ref(page.props.pagination || {current_page: 1, last_page: 1, total: 0})
+const initialFilters = page.props.filters || {}
 
-const searchQuery = ref("")
-const filterType = ref("all")
-const sortOrder = ref("desc")
+const searchQuery = ref(initialFilters.search || "")
+const filterType = ref(initialFilters.filter || "all")
+const sortOrder = ref(initialFilters.sort || "desc")
 
 const showDeleteAllModal = ref(false)
+let filtersDebounceTimer = null
 
 watch(() => page.props.flash, (val) => (flash.value = val))
-
-const filteredCodes = computed(() => {
-    let list = [...codes.value]
-
-    if (filterType.value === "dynamic") {
-        list = list.filter((c) => c.is_dynamic)
-    } else if (filterType.value === "static") {
-        list = list.filter((c) => !c.is_dynamic)
-    }
-
-    if (searchQuery.value.trim()) {
-        const q = searchQuery.value.toLowerCase()
-        list = list.filter((c) => c.content.toLowerCase().includes(q))
-    }
-
-    list.sort((a, b) => {
-        return sortOrder.value === "asc"
-            ? new Date(a.created_at) - new Date(b.created_at)
-            : new Date(b.created_at) - new Date(a.created_at)
-    })
-
-    return list
+watch(() => page.props.codes, (val) => {
+    codes.value = val || []
+})
+watch(() => page.props.pagination, (val) => {
+    pagination.value = val || {current_page: 1, last_page: 1, total: 0}
+})
+watch(() => page.props.filters, (val) => {
+    if (!val) return
+    searchQuery.value = val.search || ""
+    filterType.value = val.filter || "all"
+    sortOrder.value = val.sort || "desc"
 })
 
 const formatQrDescription = (item) => {
@@ -234,12 +249,68 @@ const truncateContent = (text) => (text.length > 50 ? text.substring(0, 50) + ".
 const formatDate = (d) => formatDateTimeUtcPlus3(d)
 const openAnalytics = (id) => router.visit(`/qr/${id}/analytics`)
 
+const resolveDynamicUrl = (item, absolute = false) => {
+    const relativeOrFull = item.dynamic_url_full || item.dynamic_url || item.content
+
+    if (!absolute) {
+        return relativeOrFull
+    }
+
+    if (!relativeOrFull) {
+        return ''
+    }
+
+    if (/^https?:\/\//i.test(relativeOrFull)) {
+        return relativeOrFull
+    }
+
+    if (typeof window !== 'undefined' && window.location?.origin) {
+        const path = relativeOrFull.startsWith('/') ? relativeOrFull : `/${relativeOrFull}`
+        return `${window.location.origin}${path}`
+    }
+
+    return item.dynamic_url_full || relativeOrFull
+}
+
+const getPreviewSrc = (item) => item?.image_path || ''
+
+const buildQueryParams = (pageNum = 1) => ({
+    page: pageNum,
+    search: searchQuery.value.trim() || undefined,
+    filter: filterType.value !== 'all' ? filterType.value : undefined,
+    sort: sortOrder.value !== 'desc' ? sortOrder.value : undefined,
+})
+
+const fetchHistory = (pageNum = 1) => {
+    router.get('/history', buildQueryParams(pageNum), {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+        only: ['codes', 'pagination', 'filters', 'flash'],
+    })
+}
+
+const goToPage = (pageNum) => {
+    if (pageNum < 1 || pageNum > (pagination.value.last_page || 1)) return
+    fetchHistory(pageNum)
+}
+
+watch([searchQuery, filterType, sortOrder], () => {
+    if (filtersDebounceTimer) {
+        clearTimeout(filtersDebounceTimer)
+    }
+
+    filtersDebounceTimer = setTimeout(() => {
+        fetchHistory(1)
+    }, 250)
+})
+
 const downloadFile = async (item, type = "png") => {
     try {
         const {default: QRCode} = await import("qrcode")
 
         const qrContent = item.is_dynamic
-            ? (item.dynamic_url_full || item.dynamic_url || item.content)
+            ? resolveDynamicUrl(item, true)
             : item.content
 
         if (type === "png") {
@@ -292,7 +363,7 @@ const deleteItem = (item) => {
     router.delete(`/qr/${item.id}`, {
         preserveScroll: true,
         onSuccess: () => {
-            codes.value = codes.value.filter((code) => code.id !== item.id)
+            fetchHistory(pagination.value.current_page || 1)
         },
     })
 }
@@ -424,6 +495,39 @@ h2 {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 2rem;
+}
+
+.pagination {
+    margin-top: 2.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.page-btn {
+    border: none;
+    border-radius: 12px;
+    padding: 0.65rem 1rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, $color-primary, $color-primary-dark);
+    color: #fff;
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+
+    &:hover:not(:disabled) {
+        transform: translateY(-1px);
+    }
+
+    &:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+}
+
+.page-meta {
+    font-weight: 700;
+    color: $color-primary-dark;
 }
 
 .history-card {

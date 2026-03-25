@@ -76,7 +76,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 });
 
 // 🔗 редирект динамических QR (публичный)
-Route::get('/r/{uuid}', [QrCodeController::class, 'redirect'])->name('qr.redirect');
+Route::get('/r/{slug}', [QrCodeController::class, 'redirect'])->name('qr.redirect');
 
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware('web')

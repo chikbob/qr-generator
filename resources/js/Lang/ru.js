@@ -140,6 +140,9 @@ export default {
         device: 'Устройство',
         referer: 'Источник',
         scansPerDay: 'Сканирования за день',
+        notAvailable: 'Неизвестно',
+        locationLocalProxy: 'Локально/Прокси',
+        locationUnknown: 'Гео недоступно',
     },
 
     qrGenerator: {

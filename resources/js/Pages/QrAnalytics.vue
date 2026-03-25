@@ -33,14 +33,18 @@
                 <tr v-for="scan in scans" :key="scan.id">
                     <td>{{ formatDate(scan.created_at) }}</td>
                     <td class="scan-location">
-                        <span>{{ scan.country || '—' }}</span>
-                        <span v-if="scan.location_source === 'local_proxy'" class="location-badge">Local/Proxy</span>
-                        <span v-else-if="scan.location_source === 'unknown'" class="location-badge unknown">Geo unavailable</span>
+                        <span>{{ displayCountry(scan.country) }}</span>
+                        <span v-if="scan.location_source === 'local_proxy'" class="location-badge">
+                            {{ t('qrAnalytics.locationLocalProxy') }}
+                        </span>
+                        <span v-else-if="scan.location_source === 'unknown'" class="location-badge unknown">
+                            {{ t('qrAnalytics.locationUnknown') }}
+                        </span>
                     </td>
-                    <td>{{ scan.city || '—' }}</td>
-                    <td>{{ scan.browser || '—' }}</td>
-                    <td>{{ scan.device || '—' }}</td>
-                    <td>{{ scan.referer || '—' }}</td>
+                    <td>{{ displayValue(scan.city) }}</td>
+                    <td>{{ displayValue(scan.browser) }}</td>
+                    <td>{{ displayValue(scan.device) }}</td>
+                    <td>{{ displayValue(scan.referer) }}</td>
                 </tr>
                 </tbody>
             </table>
@@ -62,6 +66,19 @@ const qrCode = props.qrCode
 const scans = props.scans
 
 const formatDate = (d) => formatDateTimeUtcPlus3(d)
+const displayValue = (value) => {
+    if (value === null || value === undefined || value === "") {
+        return t('qrAnalytics.notAvailable')
+    }
+
+    const normalized = String(value).trim().toLowerCase()
+    if (["невідомо", "неизвестно", "unknown"].includes(normalized)) {
+        return t('qrAnalytics.notAvailable')
+    }
+
+    return value
+}
+const displayCountry = (value) => displayValue(value)
 
 const chart = ref(null)
 onMounted(() => {

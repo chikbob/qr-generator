@@ -140,6 +140,9 @@ export default {
         device: 'Пристрій',
         referer: 'Джерело',
         scansPerDay: 'Сканування за день',
+        notAvailable: 'Невідомо',
+        locationLocalProxy: 'Локально/Проксі',
+        locationUnknown: 'Гео недоступне',
     },
 
     qrGenerator: {

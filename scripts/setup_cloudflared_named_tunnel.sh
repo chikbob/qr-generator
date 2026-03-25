@@ -51,7 +51,5 @@ EOF
 
 echo "Done."
 echo "Next:"
-echo "  - set QR_PUBLIC_BASE_URL=https://${HOSTNAME} in .env"
-echo "  - run: docker-compose exec app php artisan config:clear"
-echo "  - run: docker-compose exec app php artisan config:cache"
-echo "  - run tunnel: cloudflared tunnel run ${TUNNEL_NAME}"
+echo "  - run tunnel with env sync:"
+echo "    ./scripts/start_named_tunnel.sh ${TUNNEL_NAME} ${HOSTNAME}"

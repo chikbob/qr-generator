@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\QrCode;
 use App\Models\QrScan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Http;
 use Jenssegers\Agent\Agent;
@@ -25,22 +26,47 @@ class QrCodeController extends Controller
     }
 
     // 🟢 Список QR-кодів користувача
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
+        $perPage = 8;
+        $search = trim((string) $request->query('search', ''));
+        $filter = (string) $request->query('filter', 'all');
+        $sort = strtolower((string) $request->query('sort', 'desc')) === 'asc' ? 'asc' : 'desc';
 
-        $query = QrCode::where('user_id', $user->id)->latest()->withCount('scans');
+        $query = QrCode::where('user_id', $user->id)->withCount('scans');
 
         // 🧠 Если план — Free, не показываем динамические QR
         if (!$user->plan || $user->plan->name === 'Free') {
             $query->where('is_dynamic', false);
         }
 
-        $codes = $query->get()->map(fn($code) => [
+        if ($filter === 'dynamic') {
+            $query->where('is_dynamic', true);
+        } elseif ($filter === 'static') {
+            $query->where('is_dynamic', false);
+        }
+
+        if ($search !== '') {
+            $query->where('content', 'like', '%' . $search . '%');
+        }
+
+        $query->orderBy('created_at', $sort);
+
+        $paginator = $query->paginate($perPage)->withQueryString();
+        $codesCollection = $paginator->getCollection();
+
+        // Keep dynamic QR images in sync with current public tunnel URL for currently visible page.
+        $currentPublicBaseUrl = $this->resolvePublicBaseUrl($request);
+        if ($currentPublicBaseUrl) {
+            $this->refreshDynamicImagesForCodes($codesCollection, $currentPublicBaseUrl);
+        }
+
+        $codes = $codesCollection->map(fn($code) => [
             'id' => $code->id,
             'content' => $code->content,
             'type' => $code->type,
-            'image_path' => asset($code->image_path),
+            'image_path' => $this->assetWithVersion($code->image_path),
             'size' => $code->size,
             'color_dark' => $code->color_dark,
             'color_light' => $code->color_light,
@@ -48,13 +74,27 @@ class QrCodeController extends Controller
             'redirect_uuid' => $code->redirect_uuid,
             'slug' => $code->slug,
             'dynamic_url' => $code->is_dynamic ? '/r/' . $code->slug : null,
-            'dynamic_url_full' => $code->is_dynamic ? $this->buildDynamicUrl($code->slug) : null,
+            'dynamic_url_full' => $code->is_dynamic ? $this->buildDynamicUrl($code->slug, $request) : null,
             'scans_count' => $code->scans_count,
             'created_at' => $code->created_at->toDateTimeString(),
         ]);
+        $paginator->setCollection($codes);
 
         return Inertia::render('QrHistory', [
-            'codes' => $codes,
+            'codes' => $paginator->items(),
+            'pagination' => [
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+                'from' => $paginator->firstItem(),
+                'to' => $paginator->lastItem(),
+            ],
+            'filters' => [
+                'search' => $search,
+                'filter' => $filter,
+                'sort' => $sort,
+            ],
             'auth' => [
                 'user' => [
                     'id' => $user->id,
@@ -96,10 +136,15 @@ class QrCodeController extends Controller
         ]);
 
         $slug = Str::uuid()->toString();
-
-        $qrContent = $isDynamic
-            ? $this->buildDynamicUrl($slug)
-            : $data['content'];
+        $qrContent = $data['content'];
+        if ($isDynamic) {
+            $dynamicUrl = $this->buildDynamicUrl($slug, $request);
+            if ($dynamicUrl === null) {
+                return redirect()->route('history')
+                    ->with('error', 'Не найден публичный URL для динамического QR. Запустите quick tunnel и повторите.');
+            }
+            $qrContent = $dynamicUrl;
+        }
 
         $folder = public_path('qr_codes');
         if (!is_dir($folder)) mkdir($folder, 0777, true);
@@ -192,7 +237,7 @@ class QrCodeController extends Controller
             ]);
         }
 
-        $target = $qrCode->content;
+        $target = $this->normalizeRedirectTarget($qrCode->content);
 
         if ($this->shouldRedirectAway($target)) {
             return redirect()->away($target);
@@ -225,7 +270,7 @@ class QrCodeController extends Controller
             'qrCode' => [
                 'id' => $qrCode->id,
                 'content' => $qrCode->content,
-                'image_path' => asset($qrCode->image_path),
+                'image_path' => $this->assetWithVersion($qrCode->image_path),
                 'scans_count' => $qrCode->scans_count,
                 'created_at' => $qrCode->created_at->toDateTimeString(),
             ],
@@ -242,10 +287,128 @@ class QrCodeController extends Controller
         return back()->with('success', 'flash.qr.deleted_all');
     }
 
-    protected function buildDynamicUrl(string $slug): string
+    protected function buildDynamicUrl(string $slug, ?Request $request = null): ?string
     {
-        $baseUrl = config('app.public_url') ?: config('app.url');
+        $baseUrl = $this->resolvePublicBaseUrl($request);
+        if (!$baseUrl) {
+            return null;
+        }
+
         return rtrim($baseUrl, '/') . '/r/' . $slug;
+    }
+
+    protected function resolvePublicBaseUrl(?Request $request = null): ?string
+    {
+        $candidates = [];
+
+        $publicUrl = (string) config('app.public_url');
+        if ($publicUrl !== '') {
+            $candidates[] = $publicUrl;
+        }
+
+        if ($request) {
+            $host = $request->getHost();
+            if (!empty($host)) {
+                $forwardedProto = (string) $request->header('X-Forwarded-Proto');
+                $scheme = $forwardedProto !== '' ? trim(explode(',', $forwardedProto)[0]) : $request->getScheme();
+                if ($scheme === '') {
+                    $scheme = 'https';
+                }
+                if ($scheme === 'http' && str_contains($host, 'trycloudflare.com')) {
+                    $scheme = 'https';
+                }
+                $candidates[] = $scheme . '://' . $host;
+            }
+        }
+
+        $appUrl = (string) config('app.url');
+        if ($appUrl !== '') {
+            $candidates[] = $appUrl;
+        }
+
+        foreach ($candidates as $candidate) {
+            $normalized = $this->normalizePublicBaseUrl($candidate);
+            if ($normalized !== null && !$this->isLocalHostUrl($normalized)) {
+                return $normalized;
+            }
+        }
+
+        return null;
+    }
+
+    protected function normalizePublicBaseUrl(string $url): ?string
+    {
+        $url = trim($url);
+        if ($url === '') {
+            return null;
+        }
+
+        if (!preg_match('#^https?://#i', $url)) {
+            $url = 'https://' . $url;
+        }
+
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            return null;
+        }
+
+        return rtrim($url, '/');
+    }
+
+    protected function isLocalHostUrl(string $url): bool
+    {
+        $host = strtolower((string) parse_url($url, PHP_URL_HOST));
+        if ($host === '') {
+            return true;
+        }
+
+        return in_array($host, ['localhost', '127.0.0.1', '0.0.0.0', '::1'], true);
+    }
+
+    protected function refreshDynamicImagesForCodes(Collection $codes, string $baseUrl): void
+    {
+        $dynamicCodes = $codes->filter(fn($code) => $code->is_dynamic && !empty($code->slug) && !empty($code->image_path));
+        if ($dynamicCodes->isEmpty()) {
+            return;
+        }
+
+        foreach ($dynamicCodes as $code) {
+            $fullPath = public_path($code->image_path);
+            $dir = dirname($fullPath);
+            if (!is_dir($dir)) {
+                @mkdir($dir, 0777, true);
+            }
+
+            $dark = $this->parseHexColor((string) ($code->color_dark ?? '#000000'), [0, 0, 0]);
+            $light = $this->parseHexColor((string) ($code->color_light ?? '#ffffff'), [255, 255, 255]);
+            $size = (int) ($code->size ?: 300);
+            $qrContent = rtrim($baseUrl, '/') . '/r/' . $code->slug;
+
+            \SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')
+                ->encoding('UTF-8')
+                ->size($size)
+                ->color(...$dark)
+                ->backgroundColor(...$light)
+                ->generate($qrContent, $fullPath);
+        }
+    }
+
+    /**
+     * @param array<int, int> $fallback
+     * @return array<int, int>
+     */
+    protected function parseHexColor(string $hex, array $fallback): array
+    {
+        $hex = trim($hex);
+        if (!preg_match('/^#[0-9a-fA-F]{6}$/', $hex)) {
+            return $fallback;
+        }
+
+        $parts = sscanf($hex, '#%02x%02x%02x');
+        if (!is_array($parts) || count($parts) !== 3) {
+            return $fallback;
+        }
+
+        return array_map(fn($v) => (int) $v, $parts);
     }
 
     protected function getClientIp(Request $request): string
@@ -309,4 +472,53 @@ class QrCodeController extends Controller
 
         return in_array(strtolower($scheme), ['http', 'https', 'mailto', 'tel', 'sms', 'geo'], true);
     }
+
+    protected function normalizeRedirectTarget(string $content): string
+    {
+        $normalized = trim($content);
+
+        if ($normalized === '') {
+            return $content;
+        }
+
+        $scheme = parse_url($normalized, PHP_URL_SCHEME);
+        if (!empty($scheme)) {
+            return $normalized;
+        }
+
+        if (preg_match('/\s/u', $normalized)) {
+            return $normalized;
+        }
+
+        $candidate = 'https://' . $normalized;
+        if (!filter_var($candidate, FILTER_VALIDATE_URL)) {
+            return $normalized;
+        }
+
+        $host = parse_url($candidate, PHP_URL_HOST);
+        if (empty($host) || !str_contains($host, '.')) {
+            return $normalized;
+        }
+
+        return $candidate;
+    }
+
+    protected function assetWithVersion(?string $path): string
+    {
+        $path = trim((string) $path);
+        if ($path === '') {
+            return '';
+        }
+
+        $url = asset($path);
+        $fullPath = public_path($path);
+        $version = @filemtime($fullPath);
+
+        if (!$version) {
+            return $url;
+        }
+
+        return $url . '?v=' . $version;
+    }
+
 }

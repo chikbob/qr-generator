@@ -5,6 +5,8 @@ set -euo pipefail
 # Good for external testing via trycloudflare without manual rebuilds.
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+TARGET_URL="${1:-http://localhost:8080}"
+MANUAL_PUBLIC_URL="${2:-}"
 WATCH_PID=""
 
 cleanup() {
@@ -37,4 +39,4 @@ docker-compose exec -T app npm run build -- --watch &
 WATCH_PID=$!
 
 echo "4) Starting quick tunnel (auto-updates QR_PUBLIC_BASE_URL)..."
-"${ROOT_DIR}/scripts/start_quick_tunnel.sh" "http://localhost:8080"
+"${ROOT_DIR}/scripts/start_quick_tunnel.sh" "${TARGET_URL}" "${MANUAL_PUBLIC_URL}"

@@ -94,7 +94,6 @@ const logout = () => {
 // Языки с флагами
 const flags = {
     ru: {flag: '🇷🇺'},
-    ua: {flag: '🇺🇦'},
     en: {flag: '🇺🇸'},
 }
 

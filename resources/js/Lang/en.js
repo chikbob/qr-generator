@@ -140,6 +140,9 @@ export default {
         device: 'Device',
         referer: 'Source',
         scansPerDay: 'Scans per day',
+        notAvailable: 'Unknown',
+        locationLocalProxy: 'Local/Proxy',
+        locationUnknown: 'Geo unavailable',
     },
 
     qrGenerator: {
