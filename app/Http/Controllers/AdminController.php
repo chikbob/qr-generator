@@ -105,8 +105,26 @@ class AdminController extends Controller
 
         $columns = $this->getColumnMeta($table);
         $primaryKey = $this->getPrimaryKey($table);
+        $search = trim((string) $request->query('search', ''));
 
         $query = DB::table($table);
+
+        if ($table === 'qr_codes' && $search !== '') {
+            $query->where(function ($builder) use ($search) {
+                $builder
+                    ->where('content', 'like', '%' . $search . '%')
+                    ->orWhere('type', 'like', '%' . $search . '%')
+                    ->orWhere('slug', 'like', '%' . $search . '%')
+                    ->orWhere('image_path', 'like', '%' . $search . '%');
+
+                if (is_numeric($search)) {
+                    $builder
+                        ->orWhere('id', (int) $search)
+                        ->orWhere('user_id', (int) $search);
+                }
+            });
+        }
+
         if ($primaryKey !== null) {
             $query->orderByDesc($primaryKey);
         }
@@ -120,6 +138,9 @@ class AdminController extends Controller
             'primaryKey' => $primaryKey,
             'editableColumns' => $this->getEditableColumns($columns),
             'tables' => $this->getManagedTables(),
+            'filters' => [
+                'search' => $search,
+            ],
         ]);
     }
 

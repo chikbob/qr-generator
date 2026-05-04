@@ -95,6 +95,7 @@ const logout = () => {
 const flags = {
     ru: {flag: '🇷🇺'},
     en: {flag: '🇺🇸'},
+    ua: {flag: '🇺🇦'},
 }
 
 const selectedLang = ref(currentLang.value)

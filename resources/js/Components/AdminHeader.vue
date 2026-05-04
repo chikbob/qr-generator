@@ -52,7 +52,7 @@ defineProps({
     },
 })
 
-const langs = ['ru', 'en']
+const langs = ['ru', 'en', 'ua']
 
 const changeLang = (lang) => {
     setLang(lang)

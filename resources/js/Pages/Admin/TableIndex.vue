@@ -9,6 +9,24 @@
                 </div>
             </div>
 
+            <form v-if="supportsSearch" class="search-panel" @submit.prevent="submitSearch">
+                <input
+                    v-model="searchQuery"
+                    type="search"
+                    class="search-input"
+                    placeholder="Пошук по QR-кодах"
+                />
+                <button type="submit" class="btn btn-search">Пошук</button>
+                <button
+                    v-if="searchQuery"
+                    type="button"
+                    class="btn btn-search-secondary"
+                    @click="resetSearch"
+                >
+                    Скинути
+                </button>
+            </form>
+
             <div class="table-wrap">
                 <table>
                     <thead>
@@ -58,6 +76,7 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import {Link, router} from '@inertiajs/vue3'
+import {computed, ref, watch} from 'vue'
 import {useI18n} from '@/Lang/useI18n'
 
 const {t, tMaybe} = useI18n()
@@ -71,11 +90,44 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    filters: {
+        type: Object,
+        default: () => ({}),
+    },
 })
+
+const supportsSearch = computed(() => props.table === 'qr_codes')
+const searchQuery = ref(props.filters?.search || '')
+
+watch(
+    () => props.filters?.search,
+    (value) => {
+        searchQuery.value = value || ''
+    }
+)
 
 const go = (url) => {
     if (!url) return
     router.visit(url)
+}
+
+const submitSearch = () => {
+    if (!supportsSearch.value) return
+    router.get(`/admin/${props.table}`, {
+        search: searchQuery.value.trim() || undefined,
+    }, {
+        preserveState: true,
+        replace: true,
+    })
+}
+
+const resetSearch = () => {
+    if (!supportsSearch.value) return
+    searchQuery.value = ''
+    router.get(`/admin/${props.table}`, {}, {
+        preserveState: true,
+        replace: true,
+    })
 }
 
 const encodeRowId = (id) => encodeURIComponent(String(id))
@@ -140,7 +192,67 @@ const tableLabel = (table) => {
 
 .actions {
     display: flex;
+    align-items: center;
     justify-content: flex-end;
+}
+
+.search-panel {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    margin-bottom: 1rem;
+    padding: 14px 16px;
+    border: 1px solid #f5bfd0;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #fff7fb, #fff1f5);
+    box-shadow: 0 8px 20px rgba(189, 101, 146, 0.08);
+    flex-direction: row;
+}
+
+.search-panel .btn {
+    flex-shrink: 0;
+}
+
+.search-input {
+    min-width: 280px;
+    padding: 10px 12px;
+    border: 1px solid #f1d2de;
+    border-radius: 10px;
+    font-size: 0.92rem;
+    color: #334155;
+    background: #fff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #e095bc;
+    box-shadow: 0 0 0 3px rgba(224, 149, 188, 0.18);
+}
+
+.btn-search {
+    background: linear-gradient(135deg, #e095bc, #bd6592);
+    border-color: #d87cab;
+    color: #fff;
+}
+
+.btn-search:hover {
+    background: linear-gradient(135deg, #d981ad, #aa547f);
+    border-color: #c86d99;
+    color: #fff;
+}
+
+.btn-search-secondary {
+    background: #fff;
+    border-color: #f5bfd0;
+    color: #7a1f47;
+}
+
+.btn-search-secondary:hover {
+    background: #fdf2f8;
+    border-color: #e7a8bf;
+    color: #7a1f47;
 }
 
 .table-wrap {
@@ -148,6 +260,20 @@ const tableLabel = (table) => {
     background: #fff;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
+}
+
+.btn {
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.search-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
 }
 
 table {
@@ -259,6 +385,19 @@ th {
 
     .actions {
         justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .search-panel {
+        width: 100%;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    .search-input {
+        min-width: 220px;
+        width: auto;
     }
 }
 </style>

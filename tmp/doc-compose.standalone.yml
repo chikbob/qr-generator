@@ -1,0 +1,36 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: biryukova-doc-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: qr-generator-app
+    volumes:
+      - biryukova-doc-db-data:/var/lib/mysql
+
+  app:
+    image: biryukova-doc-app:latest
+    container_name: biryukova-doc-app
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: base64:+sWLRUWXxKx474wTQgduwoMDPJZkB4rdEBOh+iW2yB0=
+      APP_URL: http://localhost:8090
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: qr-generator-app
+      DB_USERNAME: root
+      DB_PASSWORD: secret
+      QR_PUBLIC_BASE_URL: http://localhost:8090
+    ports:
+      - "8090:80"
+    volumes:
+      - ..:/var/www/html
+
+volumes:
+  biryukova-doc-db-data:
