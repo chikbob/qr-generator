@@ -49,6 +49,10 @@ class DatabaseSeeder extends Seeder
             );
         }
 
+        if (! class_exists(\Faker\Factory::class)) {
+            return;
+        }
+
         User::factory(57)->create([
             'plan_id' => fn () => fake()->randomElement([1, 2, 3]),
             'is_admin' => false,
