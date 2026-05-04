@@ -28,8 +28,9 @@ RUN docker-php-ext-install pdo_mysql zip gd
 RUN pecl install imagick \
     && docker-php-ext-enable imagick
 
-# Включаем mod_rewrite
-RUN a2enmod rewrite
+# Фиксируем совместимый MPM для mod_php и включаем rewrite
+RUN a2dismod mpm_event mpm_worker || true \
+    && a2enmod mpm_prefork rewrite
 
 # ----------------------------
 # Composer
