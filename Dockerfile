@@ -42,19 +42,29 @@ WORKDIR /var/www/html
 # Laravel зависимости
 # ----------------------------
 COPY composer.json composer.lock ./
-RUN composer install --no-interaction --optimize-autoloader --no-dev --no-progress || true
+RUN composer install \
+    --no-interaction \
+    --no-dev \
+    --no-progress \
+    --prefer-dist \
+    --optimize-autoloader \
+    --no-scripts
 
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm ci
 
 COPY . .
 
 # ----------------------------
 # Права
 # ----------------------------
-RUN mkdir -p database storage bootstrap/cache \
+RUN composer dump-autoload --optimize --no-dev \
+    && php artisan package:discover --ansi \
+    && npm run build \
+    && mkdir -p database storage bootstrap/cache public/qr_codes \
     && chown -R www-data:www-data storage bootstrap/cache database \
-    && chmod -R 775 storage bootstrap/cache
+    && chown -R www-data:www-data public/qr_codes \
+    && chmod -R 775 storage bootstrap/cache public/qr_codes
 
 # ----------------------------
 # Apache config
@@ -76,8 +86,3 @@ ENTRYPOINT ["docker-entrypoint.sh"]
 
 EXPOSE 80
 CMD ["apache2-foreground"]
-
-# Создаём папку для QR-кодов
-RUN mkdir -p /var/www/html/public/qr_codes \
-    && chown -R www-data:www-data /var/www/html/public/qr_codes \
-    && chmod -R 775 /var/www/html/public/qr_codes
