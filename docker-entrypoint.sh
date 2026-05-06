@@ -48,7 +48,9 @@ if [ -n "$DB_HOST" ] && [ -n "$DB_PORT" ] && [ -n "$DB_DATABASE" ] && [ -n "$DB_
 
     if [ "$db_ready" = true ] && [ ! -f /tmp/.migrations_done ]; then
         echo "Running migrations..."
-        php artisan migrate --force --seed
+        php artisan migrate --force
+        echo "Seeding plans..."
+        php artisan db:seed --class=PlanSeeder --force
         touch /tmp/.migrations_done
     elif [ "$db_ready" != true ]; then
         echo "MySQL is still unavailable after 30 attempts. Skipping migrations for this start."
