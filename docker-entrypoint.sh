@@ -8,6 +8,15 @@ if [ ! -f vendor/autoload.php ]; then
     exit 1
 fi
 
+APACHE_PORT="${PORT:-80}"
+
+sed -i "s/^Listen .*/Listen ${APACHE_PORT}/" /etc/apache2/ports.conf
+sed -i "s/<VirtualHost \\*:.*>/<VirtualHost *:${APACHE_PORT}>/" /etc/apache2/sites-available/000-default.conf
+
+if ! grep -q "^ServerName " /etc/apache2/apache2.conf; then
+    echo "ServerName localhost" >> /etc/apache2/apache2.conf
+fi
+
 # Railway may reuse cached layers or rebuild from a different Dockerfile path.
 # Enforce a mod_php-compatible Apache MPM at runtime before Apache starts.
 if command -v a2dismod >/dev/null 2>&1; then
