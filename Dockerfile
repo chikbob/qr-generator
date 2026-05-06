@@ -1,4 +1,4 @@
-FROM php:8.2-apache
+FROM php:8.4-apache
 
 # ----------------------------
 # Установка системных пакетов
@@ -28,8 +28,9 @@ RUN docker-php-ext-install pdo_mysql zip gd
 RUN pecl install imagick \
     && docker-php-ext-enable imagick
 
-# Включаем mod_rewrite
-RUN a2enmod rewrite
+# Фиксируем совместимый MPM для mod_php и включаем нужные модули
+RUN a2dismod mpm_event mpm_worker || true \
+    && a2enmod mpm_prefork rewrite headers
 
 # ----------------------------
 # Composer
@@ -42,19 +43,30 @@ WORKDIR /var/www/html
 # Laravel зависимости
 # ----------------------------
 COPY composer.json composer.lock ./
-RUN composer install --no-interaction --optimize-autoloader --no-dev --no-progress || true
+RUN composer install \
+    --no-interaction \
+    --no-dev \
+    --no-progress \
+    --prefer-dist \
+    --optimize-autoloader \
+    --no-scripts \
+    --ignore-platform-req=php
 
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm ci
 
 COPY . .
 
 # ----------------------------
 # Права
 # ----------------------------
-RUN mkdir -p database storage bootstrap/cache \
+RUN composer dump-autoload --optimize --no-dev --ignore-platform-req=php \
+    && php artisan package:discover --ansi \
+    && npm run build \
+    && mkdir -p database storage bootstrap/cache public/qr_codes \
     && chown -R www-data:www-data storage bootstrap/cache database \
-    && chmod -R 775 storage bootstrap/cache
+    && chown -R www-data:www-data public/qr_codes \
+    && chmod -R 775 storage bootstrap/cache public/qr_codes
 
 # ----------------------------
 # Apache config
@@ -76,8 +88,3 @@ ENTRYPOINT ["docker-entrypoint.sh"]
 
 EXPOSE 80
 CMD ["apache2-foreground"]
-
-# Создаём папку для QR-кодов
-RUN mkdir -p /var/www/html/public/qr_codes \
-    && chown -R www-data:www-data /var/www/html/public/qr_codes \
-    && chmod -R 775 /var/www/html/public/qr_codes
