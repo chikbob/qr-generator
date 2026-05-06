@@ -1,7 +1,7 @@
 # Multi-stage production Dockerfile for Laravel app
 
 # Stage 1: Build PHP dependencies
-FROM php:8.1-cli as php-build
+FROM php:8.3-cli as php-build
 RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip libpng-dev libonig-dev libxml2-dev libzip-dev pkg-config \
     && docker-php-ext-install pdo_mysql zip gd \
@@ -11,7 +11,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /build
 COPY composer.json composer.lock ./
-RUN composer install --no-interaction --optimize-autoloader --no-dev --no-progress
+RUN composer install --no-interaction --optimize-autoloader --no-dev --no-progress --no-scripts
 
 # Stage 2: Build frontend assets
 FROM node:20-alpine as node-build
@@ -19,15 +19,16 @@ WORKDIR /build
 COPY package.json package-lock.json ./
 RUN npm ci
 
+COPY --from=php-build /build/vendor ./vendor
 COPY . .
 RUN npm run build
 
 # Stage 3: Production runtime
-FROM php:8.1-apache
+FROM php:8.3-apache
 
 # Install Node.js for potential runtime needs
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl gnupg supervisor \
+    curl gnupg supervisor default-mysql-client \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -36,7 +37,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpng-dev libonig-dev libxml2-dev libzip-dev pkg-config \
     && docker-php-ext-install pdo_mysql zip gd \
-    && a2enmod rewrite headers \
+    && a2dismod mpm_event mpm_worker || true \
+    && a2enmod mpm_prefork rewrite headers \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -53,7 +55,9 @@ COPY --from=node-build /build/public ./public
 COPY . .
 
 # Create required directories
-RUN mkdir -p database storage bootstrap/cache \
+RUN composer dump-autoload --optimize --no-dev \
+    && php artisan package:discover --ansi \
+    && mkdir -p database storage bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache database \
     && chmod -R 775 storage bootstrap/cache
 
