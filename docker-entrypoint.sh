@@ -18,6 +18,21 @@ if [ ! -f /tmp/.migrations_done ]; then
     touch /tmp/.migrations_done
 fi
 
+# Railway may reuse cached layers or rebuild from a different Dockerfile path.
+# Enforce a mod_php-compatible Apache MPM at runtime before Apache starts.
+if command -v a2dismod >/dev/null 2>&1; then
+    a2dismod mpm_event mpm_worker >/dev/null 2>&1 || true
+fi
+
+rm -f /etc/apache2/mods-enabled/mpm_event.conf \
+      /etc/apache2/mods-enabled/mpm_event.load \
+      /etc/apache2/mods-enabled/mpm_worker.conf \
+      /etc/apache2/mods-enabled/mpm_worker.load
+
+if command -v a2enmod >/dev/null 2>&1; then
+    a2enmod mpm_prefork >/dev/null 2>&1 || true
+fi
+
 php artisan config:clear
 php artisan config:cache
 
