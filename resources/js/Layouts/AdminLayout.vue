@@ -20,12 +20,12 @@ const tables = computed(() => page.props.tables || [])
 .admin-layout {
     min-height: 100dvh;
     background:
-        radial-gradient(circle at 1px 1px, rgba(189, 101, 146, 0.14) 1px, transparent 0);
-    background-size: 16px 16px;
+        radial-gradient(circle at top left, rgba(251, 207, 232, 0.42), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(254, 205, 211, 0.35), transparent 28%),
+        linear-gradient(180deg, #fff8fb 0%, #fff5f8 38%, #fffdfd 100%);
 }
 
 .admin-main {
-    padding: 18px;
+    padding: 22px 18px 32px;
 }
 </style>
-
