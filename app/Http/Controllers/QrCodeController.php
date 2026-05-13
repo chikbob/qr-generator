@@ -29,7 +29,7 @@ class QrCodeController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $perPage = 8;
+        $perPage = 10;
         $search = trim((string) $request->query('search', ''));
         $filter = (string) $request->query('filter', 'all');
         $sort = strtolower((string) $request->query('sort', 'desc')) === 'asc' ? 'asc' : 'desc';

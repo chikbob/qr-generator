@@ -9,20 +9,35 @@
                 </div>
             </div>
 
-            <form v-if="supportsSearch" class="search-panel" @submit.prevent="submitSearch">
+            <form class="search-panel" @submit.prevent="submitFilters">
                 <input
                     v-model="searchQuery"
                     type="search"
-                    class="search-input"
-                    placeholder="Пошук по QR-кодах"
+                    class="search-input search-grow"
+                    :placeholder="`Пошук по таблиці ${table}`"
                 />
+
+                <select v-model="filterColumn" class="search-input select-input">
+                    <option value="">Фільтр: усі поля</option>
+                    <option
+                        v-for="column in filterableColumns"
+                        :key="column"
+                        :value="column"
+                    >
+                        {{ column }}
+                    </option>
+                </select>
+
+                <input
+                    v-model="filterValue"
+                    type="search"
+                    class="search-input search-grow"
+                    :disabled="!filterColumn"
+                    placeholder="Значення фільтра"
+                />
+
                 <button type="submit" class="btn btn-search">Пошук</button>
-                <button
-                    v-if="searchQuery"
-                    type="button"
-                    class="btn btn-search-secondary"
-                    @click="resetSearch"
-                >
+                <button type="button" class="btn btn-search-secondary" @click="resetFilters">
                     Скинути
                 </button>
             </form>
@@ -31,24 +46,37 @@
                 <table>
                     <thead>
                     <tr>
-                        <th v-for="column in columns" :key="column.name" :title="column.name">{{ column.name }}</th>
-                        <th>{{ t('admin.common.actions') }}</th>
+                        <th v-for="column in columns" :key="column.name" :title="column.name">
+                            <button
+                                type="button"
+                                class="sort-btn"
+                                @click="toggleSort(column.name)"
+                            >
+                                <span>{{ column.name }}</span>
+                                <span class="sort-arrow" :class="{ active: filters?.sort_by === column.name }">
+                                    {{ sortArrow(column.name) }}
+                                </span>
+                            </button>
+                        </th>
+                        <th class="actions-column">{{ t('admin.common.actions') }}</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr v-for="row in rows.data" :key="rowKey(row)">
                         <td v-for="column in columns" :key="column.name">{{ printValue(row[column.name]) }}</td>
-                        <td class="row-actions">
-                            <Link
-                                v-if="primaryKey"
-                                :href="`/admin/${table}/${encodeRowId(row[primaryKey])}/edit`"
-                                class="btn btn-small"
-                            >
-                                {{ t('admin.common.edit') }}
-                            </Link>
-                            <button v-if="primaryKey" class="btn btn-small btn-danger" @click="removeRow(row)">
-                                {{ t('admin.common.delete') }}
-                            </button>
+                        <td class="row-actions-cell">
+                            <div class="row-actions">
+                                <Link
+                                    v-if="primaryKey"
+                                    :href="`/admin/${table}/${encodeRowId(row[primaryKey])}/edit`"
+                                    class="btn btn-small"
+                                >
+                                    {{ t('admin.common.edit') }}
+                                </Link>
+                                <button v-if="primaryKey" class="btn btn-small btn-danger" @click="removeRow(row)">
+                                    {{ t('admin.common.delete') }}
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     <tr v-if="!rows.data.length">
@@ -58,9 +86,9 @@
                 </table>
             </div>
 
-            <div class="pagination" v-if="rows.links?.length">
+            <div class="pagination" v-if="paginationLinks.length">
                 <button
-                    v-for="(link, idx) in rows.links"
+                    v-for="(link, idx) in paginationLinks"
                     :key="idx"
                     class="page-btn"
                     :class="{ active: link.active }"
@@ -83,9 +111,23 @@ const {t, tMaybe} = useI18n()
 
 const props = defineProps({
     table: String,
-    columns: Array,
-    rows: Object,
+    columns: {
+        type: Array,
+        default: () => [],
+    },
+    rows: {
+        type: Object,
+        default: () => ({data: [], links: []}),
+    },
     primaryKey: String,
+    searchableColumns: {
+        type: Array,
+        default: () => [],
+    },
+    filterableColumns: {
+        type: Array,
+        default: () => [],
+    },
     tables: {
         type: Array,
         default: () => [],
@@ -96,38 +138,86 @@ const props = defineProps({
     },
 })
 
-const supportsSearch = computed(() => props.table === 'qr_codes')
 const searchQuery = ref(props.filters?.search || '')
+const filterColumn = ref(props.filters?.filter_column || '')
+const filterValue = ref(props.filters?.filter_value || '')
 
 watch(
-    () => props.filters?.search,
+    () => props.filters,
     (value) => {
-        searchQuery.value = value || ''
-    }
+        searchQuery.value = value?.search || ''
+        filterColumn.value = value?.filter_column || ''
+        filterValue.value = value?.filter_value || ''
+    },
+    {deep: true}
 )
+
+watch(filterColumn, (value) => {
+    if (!value) {
+        filterValue.value = ''
+    }
+})
+
+const paginationLinks = computed(() => {
+    return Array.isArray(props.rows?.links)
+        ? props.rows.links.filter((link) => link.label !== '...')
+        : []
+})
+
+const buildQuery = (overrides = {}) => ({
+    search: searchQuery.value.trim() || undefined,
+    filter_column: filterColumn.value || undefined,
+    filter_value: filterValue.value.trim() || undefined,
+    sort_by: props.filters?.sort_by || undefined,
+    sort_direction: props.filters?.sort_direction || undefined,
+    ...overrides,
+})
 
 const go = (url) => {
     if (!url) return
-    router.visit(url)
+    router.visit(url, {
+        preserveScroll: true,
+        preserveState: true,
+    })
 }
 
-const submitSearch = () => {
-    if (!supportsSearch.value) return
-    router.get(`/admin/${props.table}`, {
-        search: searchQuery.value.trim() || undefined,
-    }, {
+const submitFilters = () => {
+    router.get(`/admin/${props.table}`, buildQuery(), {
         preserveState: true,
+        preserveScroll: true,
         replace: true,
     })
 }
 
-const resetSearch = () => {
-    if (!supportsSearch.value) return
+const resetFilters = () => {
     searchQuery.value = ''
+    filterColumn.value = ''
+    filterValue.value = ''
+
     router.get(`/admin/${props.table}`, {}, {
         preserveState: true,
+        preserveScroll: true,
         replace: true,
     })
+}
+
+const toggleSort = (columnName) => {
+    const isCurrent = props.filters?.sort_by === columnName
+    const nextDirection = isCurrent && props.filters?.sort_direction === 'asc' ? 'desc' : 'asc'
+
+    router.get(`/admin/${props.table}`, buildQuery({
+        sort_by: columnName,
+        sort_direction: nextDirection,
+    }), {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+    })
+}
+
+const sortArrow = (columnName) => {
+    if (props.filters?.sort_by !== columnName) return '↕'
+    return props.filters?.sort_direction === 'asc' ? '↑' : '↓'
 }
 
 const encodeRowId = (id) => encodeURIComponent(String(id))
@@ -164,7 +254,7 @@ const tableLabel = (table) => {
 
 <style scoped lang="scss">
 .admin-page {
-    max-width: 1200px;
+    max-width: 1280px;
     margin: 0 auto;
     padding: 1.2rem 1rem 3rem;
 }
@@ -197,25 +287,21 @@ const tableLabel = (table) => {
 }
 
 .search-panel {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
+    display: grid;
+    grid-template-columns: minmax(220px, 1.4fr) minmax(180px, 0.9fr) minmax(220px, 1.2fr) auto auto;
     gap: 10px;
+    align-items: center;
     margin-bottom: 1rem;
     padding: 14px 16px;
     border: 1px solid #f5bfd0;
     border-radius: 14px;
     background: linear-gradient(135deg, #fff7fb, #fff1f5);
     box-shadow: 0 8px 20px rgba(189, 101, 146, 0.08);
-    flex-direction: row;
-}
-
-.search-panel .btn {
-    flex-shrink: 0;
 }
 
 .search-input {
-    min-width: 280px;
+    width: 100%;
+    min-width: 0;
     padding: 10px 12px;
     border: 1px solid #f1d2de;
     border-radius: 10px;
@@ -231,28 +317,10 @@ const tableLabel = (table) => {
     box-shadow: 0 0 0 3px rgba(224, 149, 188, 0.18);
 }
 
-.btn-search {
-    background: linear-gradient(135deg, #e095bc, #bd6592);
-    border-color: #d87cab;
-    color: #fff;
-}
-
-.btn-search:hover {
-    background: linear-gradient(135deg, #d981ad, #aa547f);
-    border-color: #c86d99;
-    color: #fff;
-}
-
-.btn-search-secondary {
-    background: #fff;
-    border-color: #f5bfd0;
-    color: #7a1f47;
-}
-
-.btn-search-secondary:hover {
-    background: #fdf2f8;
-    border-color: #e7a8bf;
-    color: #7a1f47;
+.search-input:disabled {
+    background: #f8fafc;
+    color: #94a3b8;
+    cursor: not-allowed;
 }
 
 .table-wrap {
@@ -262,27 +330,14 @@ const tableLabel = (table) => {
     border-radius: 12px;
 }
 
-.btn {
-    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
-}
-
-.btn:hover {
-    transform: translateY(-1px);
-}
-
-.search-form {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
 table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 820px;
+    min-width: 980px;
 }
 
-th, td {
+th,
+td {
     border-bottom: 1px solid #f1f5f9;
     padding: 10px;
     text-align: left;
@@ -301,10 +356,47 @@ th {
     line-height: 1.25;
 }
 
+.sort-btn {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.sort-arrow {
+    flex: 0 0 auto;
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.sort-arrow.active {
+    color: #9f1239;
+}
+
+.actions-column {
+    min-width: 250px;
+    width: 250px;
+}
+
+.row-actions-cell {
+    min-width: 250px;
+    width: 250px;
+}
+
 .row-actions {
     display: flex;
+    flex-wrap: nowrap;
     gap: 8px;
-    min-width: 170px;
+    min-width: 230px;
 }
 
 .btn {
@@ -316,12 +408,46 @@ th {
     text-decoration: none;
     cursor: pointer;
     font-weight: 700;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
-.btn-primary {
-    background: #e095bc;
-    border-color: #e095bc;
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn-small {
+    flex: 1 1 0;
+    min-width: 108px;
+    padding: 6px 8px;
+    font-size: 0.82rem;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.btn-primary,
+.btn-search {
+    background: linear-gradient(135deg, #e095bc, #bd6592);
+    border-color: #d87cab;
     color: #fff;
+}
+
+.btn-primary:hover,
+.btn-search:hover {
+    background: linear-gradient(135deg, #d981ad, #aa547f);
+    border-color: #c86d99;
+    color: #fff;
+}
+
+.btn-search-secondary {
+    background: #fff;
+    border-color: #f5bfd0;
+    color: #7a1f47;
+}
+
+.btn-search-secondary:hover {
+    background: #fdf2f8;
+    border-color: #e7a8bf;
+    color: #7a1f47;
 }
 
 .btn-danger {
@@ -330,9 +456,9 @@ th {
     background: #fff5f5;
 }
 
-.btn-small {
-    padding: 6px 8px;
-    font-size: 0.82rem;
+.btn-danger:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
 }
 
 .empty {
@@ -378,6 +504,12 @@ th {
     background: #f8fafc;
 }
 
+@media (max-width: 1100px) {
+    .search-panel {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
 @media (max-width: 768px) {
     .top {
         grid-template-columns: 1fr;
@@ -389,15 +521,7 @@ th {
     }
 
     .search-panel {
-        width: 100%;
-        flex-wrap: nowrap;
-        align-items: center;
-        justify-content: flex-start;
-    }
-
-    .search-input {
-        min-width: 220px;
-        width: auto;
+        grid-template-columns: 1fr;
     }
 }
 </style>

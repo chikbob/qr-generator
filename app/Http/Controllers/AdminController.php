@@ -105,27 +105,36 @@ class AdminController extends Controller
 
         $columns = $this->getColumnMeta($table);
         $primaryKey = $this->getPrimaryKey($table);
+        $columnNames = collect($columns)->pluck('name')->values()->all();
+        $searchableColumns = $this->getSearchableColumns($columns);
+        $filterableColumns = $this->getFilterableColumns($columns);
         $search = trim((string) $request->query('search', ''));
+        $filterColumn = (string) $request->query('filter_column', '');
+        $filterValue = trim((string) $request->query('filter_value', ''));
+        $sortBy = (string) $request->query('sort_by', '');
+        $sortDirection = strtolower((string) $request->query('sort_direction', 'desc')) === 'asc' ? 'asc' : 'desc';
 
         $query = DB::table($table);
 
-        if ($table === 'qr_codes' && $search !== '') {
-            $query->where(function ($builder) use ($search) {
-                $builder
-                    ->where('content', 'like', '%' . $search . '%')
-                    ->orWhere('type', 'like', '%' . $search . '%')
-                    ->orWhere('slug', 'like', '%' . $search . '%')
-                    ->orWhere('image_path', 'like', '%' . $search . '%');
-
-                if (is_numeric($search)) {
-                    $builder
-                        ->orWhere('id', (int) $search)
-                        ->orWhere('user_id', (int) $search);
+        if ($search !== '' && $searchableColumns !== []) {
+            $query->where(function ($builder) use ($search, $searchableColumns) {
+                foreach ($searchableColumns as $index => $column) {
+                    if ($index === 0) {
+                        $builder->where($column, 'like', '%' . $search . '%');
+                    } else {
+                        $builder->orWhere($column, 'like', '%' . $search . '%');
+                    }
                 }
             });
         }
 
-        if ($primaryKey !== null) {
+        if ($filterValue !== '' && in_array($filterColumn, $filterableColumns, true)) {
+            $query->where($filterColumn, 'like', '%' . $filterValue . '%');
+        }
+
+        if (in_array($sortBy, $columnNames, true)) {
+            $query->orderBy($sortBy, $sortDirection);
+        } elseif ($primaryKey !== null) {
             $query->orderByDesc($primaryKey);
         }
 
@@ -138,8 +147,14 @@ class AdminController extends Controller
             'primaryKey' => $primaryKey,
             'editableColumns' => $this->getEditableColumns($columns),
             'tables' => $this->getManagedTables(),
+            'searchableColumns' => $searchableColumns,
+            'filterableColumns' => $filterableColumns,
             'filters' => [
                 'search' => $search,
+                'filter_column' => $filterColumn,
+                'filter_value' => $filterValue,
+                'sort_by' => $sortBy,
+                'sort_direction' => $sortDirection,
             ],
         ]);
     }
@@ -321,6 +336,45 @@ class AdminController extends Controller
 
             return !in_array($column['name'], ['created_at', 'updated_at'], true);
         }));
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $columns
+     * @return array<int, string>
+     */
+    protected function getSearchableColumns(array $columns): array
+    {
+        return array_values(array_map(
+            fn (array $column): string => (string) $column['name'],
+            array_filter($columns, function (array $column): bool {
+                $type = strtolower((string) ($column['type'] ?? ''));
+
+                return $type === ''
+                    || str_contains($type, 'char')
+                    || str_contains($type, 'text')
+                    || str_contains($type, 'uuid')
+                    || str_contains($type, 'json')
+                    || str_contains($type, 'date')
+                    || str_contains($type, 'time')
+                    || str_contains($type, 'int')
+                    || str_contains($type, 'decimal')
+                    || str_contains($type, 'float')
+                    || str_contains($type, 'double')
+                    || str_contains($type, 'bool');
+            })
+        ));
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $columns
+     * @return array<int, string>
+     */
+    protected function getFilterableColumns(array $columns): array
+    {
+        return array_values(array_map(
+            fn (array $column): string => (string) $column['name'],
+            $columns
+        ));
     }
 
     /**
