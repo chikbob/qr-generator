@@ -14,12 +14,12 @@
                 <section class="form-card">
                     <div class="card-head">
                         <div>
-                            <h2>Поля запису</h2>
-                            <p>Типи та обов'язковість полів беруться зі структури таблиці.</p>
+                            <h2>{{ t('admin.form.fieldsTitle') }}</h2>
+                            <p>{{ t('admin.form.fieldsDescription') }}</p>
                         </div>
                         <div class="meta-chip">
                             <span>{{ columns.length }}</span>
-                            <small>полів</small>
+                            <small>{{ t('admin.form.fieldsCount') }}</small>
                         </div>
                     </div>
 
@@ -36,7 +36,7 @@
                             <label :for="column.name" class="field-label">
                                 <span>{{ column.name }}</span>
                                 <span class="field-badges">
-                                    <small v-if="!column.nullable" class="required-badge">required</small>
+                                    <small v-if="!column.nullable" class="required-badge">{{ t('admin.form.required') }}</small>
                                     <small class="type-badge">{{ column.type }}</small>
                                 </span>
                             </label>
@@ -57,7 +57,7 @@
                                     type="checkbox"
                                 />
                                 <span>
-                                    {{ form[column.name] ? 'Увімкнено' : 'Вимкнено' }}
+                                    {{ form[column.name] ? t('admin.form.enabled') : t('admin.form.disabled') }}
                                 </span>
                             </label>
 
@@ -79,23 +79,23 @@
 
                 <aside class="side-card">
                     <div class="side-block">
-                        <h3>Таблиця</h3>
+                        <h3>{{ t('admin.form.tableLabel') }}</h3>
                         <strong>{{ table }}</strong>
                     </div>
                     <div class="side-block">
-                        <h3>Режим</h3>
+                        <h3>{{ t('admin.form.modeLabel') }}</h3>
                         <strong>{{ modeLabel }}</strong>
                     </div>
                     <div class="side-block" v-if="mode === 'edit' && rowId !== undefined && rowId !== null">
-                        <h3>ID запису</h3>
+                        <h3>{{ t('admin.form.recordIdLabel') }}</h3>
                         <strong>{{ rowId }}</strong>
                     </div>
 
                     <div class="actions">
                         <button type="submit" class="btn btn-primary" :disabled="form.processing">
-                            {{ form.processing ? 'Збереження...' : submitLabel }}
+                            {{ form.processing ? t('admin.form.saving') : submitLabel }}
                         </button>
-                        <Link :href="`/admin/${table}`" class="btn btn-secondary">Скасувати</Link>
+                        <Link :href="`/admin/${table}`" class="btn btn-secondary">{{ t('admin.form.cancel') }}</Link>
                     </div>
                 </aside>
             </form>
@@ -139,13 +139,13 @@ for (const column of props.columns || []) {
 const form = useForm(initialData)
 
 const modeLabel = computed(() => (
-    props.mode === 'create' ? 'Нова запись' : 'Редактирование'
+    props.mode === 'create' ? t('admin.form.modeCreate') : t('admin.form.modeEdit')
 ))
 
 const modeDescription = computed(() => (
     props.mode === 'create'
-        ? 'Заполните поля и создайте новую запись в выбранной таблице.'
-        : 'Изменения сохранятся сразу в таблицу после отправки формы.'
+        ? t('admin.form.createDescription')
+        : t('admin.form.editDescription')
 ))
 
 const submitLabel = computed(() => (
