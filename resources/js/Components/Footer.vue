@@ -84,4 +84,13 @@ const currentYear = computed(() => new Date().getFullYear())
 .footer-right a:hover::after {
     width: 100%;
 }
+
+@media (max-width: 640px) {
+    .footer-inner,
+    .footer-left,
+    .footer-right {
+        justify-content: center;
+        text-align: center;
+    }
+}
 </style>

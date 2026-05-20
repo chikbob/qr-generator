@@ -26,6 +26,6 @@ const tables = computed(() => page.props.tables || [])
 }
 
 .admin-main {
-    padding: 22px 18px 32px;
+    padding: clamp(14px, 2vw, 22px) clamp(12px, 2vw, 18px) clamp(24px, 4vw, 32px);
 }
 </style>

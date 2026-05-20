@@ -9,8 +9,7 @@
                     type="text"
                     v-model="searchQuery"
                     :placeholder="t('qrHistory.searchPlaceholder')"
-                    class="search-input"
-                    style="width: 300px"
+                    class="search-input search-control"
                 />
 
                 <select v-model="filterType" class="filter-select">
@@ -19,7 +18,7 @@
                     <option value="static">{{ t('qrHistory.filter.static') }}</option>
                 </select>
 
-                <select v-model="sortOrder" class="sort-select" style="width: 200px">
+                <select v-model="sortOrder" class="sort-select sort-control">
                     <option value="desc">{{ t('qrHistory.sort.desc') }}</option>
                     <option value="asc">{{ t('qrHistory.sort.asc') }}</option>
                 </select>
@@ -403,7 +402,7 @@ $font-main: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     max-width: 1100px; /* было 1000px */
     margin: 3rem auto 5rem;
     border-radius: 20px;
-    padding: 2.5rem 2rem;
+    padding: clamp(1rem, 3vw, 2.5rem) clamp(1rem, 3vw, 2rem);
     background: #fff;
     box-shadow: 0 16px 48px rgba(236, 72, 153, 0.15);
     color: #34495e;
@@ -412,7 +411,7 @@ $font-main: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 
 h2 {
     font-weight: 900;
-    font-size: 2.4rem; /* было 2.25rem */
+    font-size: clamp(1.9rem, 3vw, 2.4rem); /* было 2.25rem */
     margin-bottom: 2rem;
     text-align: center;
     background: linear-gradient(135deg, $color-primary, $color-primary-dark);
@@ -428,6 +427,15 @@ h2 {
     gap: 1.25rem;
     margin-bottom: 2.5rem;
     align-items: center;
+}
+
+.search-control {
+    flex: 1 1 280px;
+    min-width: 0;
+}
+
+.sort-control {
+    flex: 0 1 200px;
 }
 
 .search-input,
@@ -493,7 +501,7 @@ h2 {
 
 .history-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 2rem;
 }
 
@@ -551,6 +559,7 @@ h2 {
 .qr-header {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 1.6rem;
     padding: 1.8rem 2rem 1.2rem;
     border-bottom: 2px solid lighten($color-primary-light, 10%);
@@ -633,6 +642,8 @@ h2 {
     font-weight: 700;
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
     color: darken($color-primary-dark, 10%);
     user-select: none;
 }
@@ -654,6 +665,7 @@ h2 {
 .card-actions {
     display: flex;
     gap: 14px;
+    flex-wrap: wrap;
 }
 
 .mid-actions {
@@ -667,7 +679,7 @@ h2 {
 }
 
 .action-btn {
-    flex: 1;
+    flex: 1 1 140px;
     padding: 0.7rem 1.1rem;
     border: none;
     border-radius: 16px;
@@ -771,7 +783,8 @@ h2 {
     .search-input,
     .filter-select,
     .sort-select {
-        min-width: 140px;
+        width: 100%;
+        min-width: 0;
         font-size: 1rem;
     }
 

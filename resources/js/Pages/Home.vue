@@ -52,13 +52,13 @@ $bg-soft: #f8fafc;
 .home-view {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 4rem 1.5rem;
+    padding: clamp(2rem, 4vw, 4rem) clamp(1rem, 3vw, 1.5rem);
     border-radius: 24px;
     font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
 h1 {
-    font-size: 2.6rem;
+    font-size: clamp(2rem, 4vw, 2.6rem);
     font-weight: 800;
     text-align: center;
     margin-bottom: 1rem;
@@ -70,7 +70,7 @@ h1 {
 .features {
     margin-top: 3rem;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 2rem;
 }
 

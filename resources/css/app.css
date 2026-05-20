@@ -6,15 +6,19 @@ body,
     min-height: 100dvh;
 }
 
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 body {
     display: flex;
     flex-direction: column;
     font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-
-    /* 🌸 Новый фон */
     background: #fdf3f7;
+    overflow-x: hidden;
 }
-
 
 #app {
     display: flex;
@@ -23,7 +27,18 @@ body {
 }
 
 main {
-    min-height: 90dvh;
+    min-height: 0;
+}
+
+img,
+svg,
+video,
+canvas {
+    max-width: 100%;
+}
+
+table {
+    max-width: 100%;
 }
 
 .form-container,
@@ -31,7 +46,7 @@ main {
 .profile-page,
 .qr-generator,
 .home-view {
-    max-width: 800px;
+    width: min(100%, 800px);
     margin: 2rem auto;
     padding: 0 1.25rem;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -53,15 +68,15 @@ h1, h2, h3 {
 }
 
 h1 {
-    font-size: 2rem;
+    font-size: clamp(1.85rem, 2vw + 1rem, 2rem);
 }
 
 h2 {
-    font-size: 1.75rem;
+    font-size: clamp(1.55rem, 1.6vw + 1rem, 1.75rem);
 }
 
 h3 {
-    font-size: 1.3rem;
+    font-size: clamp(1.15rem, 1vw + 0.95rem, 1.3rem);
 }
 
 form {
@@ -309,3 +324,21 @@ select:focus {
     transition: none !important;
 }
 
+@media (max-width: 768px) {
+    .form-container,
+    .auth-form,
+    .profile-page,
+    .qr-generator,
+    .home-view {
+        margin: 1.25rem auto;
+        padding: 0 1rem;
+    }
+
+    button,
+    .feature-link,
+    .action-btn,
+    .download-btn {
+        width: 100%;
+        max-width: 100%;
+    }
+}

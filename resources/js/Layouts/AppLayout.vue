@@ -18,10 +18,13 @@ import Footer from '@/Components/Footer.vue'
 <style scoped>
 .layout-wrapper {
     min-height: 100dvh;
-    height: 100dvh;
+    display: flex;
+    flex-direction: column;
 }
 
 .layout-content {
-    padding: 20px;
+    flex: 1;
+    width: 100%;
+    padding: clamp(12px, 2vw, 24px);
 }
 </style>

@@ -256,7 +256,7 @@ const tableLabel = (table) => {
 .admin-page {
     max-width: 1280px;
     margin: 0 auto;
-    padding: 1.2rem 1rem 3rem;
+    padding: clamp(1rem, 3vw, 1.2rem) 1rem 3rem;
 }
 
 .top {
@@ -270,7 +270,7 @@ const tableLabel = (table) => {
 .top h1 {
     margin: 0;
     text-align: center;
-    font-size: 2rem;
+    font-size: clamp(1.6rem, 3vw, 2rem);
     overflow-wrap: anywhere;
 }
 
@@ -333,7 +333,7 @@ const tableLabel = (table) => {
 table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 980px;
+    min-width: 760px;
 }
 
 th,
@@ -383,20 +383,20 @@ th {
 }
 
 .actions-column {
-    min-width: 250px;
-    width: 250px;
+    min-width: 190px;
+    width: 190px;
 }
 
 .row-actions-cell {
-    min-width: 250px;
-    width: 250px;
+    min-width: 190px;
+    width: 190px;
 }
 
 .row-actions {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: 8px;
-    min-width: 230px;
+    min-width: 0;
 }
 
 .btn {

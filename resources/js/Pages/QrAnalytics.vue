@@ -18,36 +18,38 @@
             </div>
 
             <h3>📍 {{ t('qrAnalytics.scanDetails') }}</h3>
-            <table class="scan-table">
-                <thead>
-                <tr>
-                    <th>{{ t('qrAnalytics.date') }}</th>
-                    <th>{{ t('qrAnalytics.country') }}</th>
-                    <th>{{ t('qrAnalytics.city') }}</th>
-                    <th>{{ t('qrAnalytics.browser') }}</th>
-                    <th>{{ t('qrAnalytics.device') }}</th>
-                    <th>{{ t('qrAnalytics.referer') }}</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="scan in scans" :key="scan.id">
-                    <td>{{ formatDate(scan.created_at) }}</td>
-                    <td class="scan-location">
-                        <span>{{ displayCountry(scan.country) }}</span>
-                        <span v-if="scan.location_source === 'local_proxy'" class="location-badge">
-                            {{ t('qrAnalytics.locationLocalProxy') }}
-                        </span>
-                        <span v-else-if="scan.location_source === 'unknown'" class="location-badge unknown">
-                            {{ t('qrAnalytics.locationUnknown') }}
-                        </span>
-                    </td>
-                    <td>{{ displayValue(scan.city) }}</td>
-                    <td>{{ displayValue(scan.browser) }}</td>
-                    <td>{{ displayValue(scan.device) }}</td>
-                    <td>{{ displayValue(scan.referer) }}</td>
-                </tr>
-                </tbody>
-            </table>
+            <div class="table-scroll">
+                <table class="scan-table">
+                    <thead>
+                    <tr>
+                        <th>{{ t('qrAnalytics.date') }}</th>
+                        <th>{{ t('qrAnalytics.country') }}</th>
+                        <th>{{ t('qrAnalytics.city') }}</th>
+                        <th>{{ t('qrAnalytics.browser') }}</th>
+                        <th>{{ t('qrAnalytics.device') }}</th>
+                        <th>{{ t('qrAnalytics.referer') }}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="scan in scans" :key="scan.id">
+                        <td>{{ formatDate(scan.created_at) }}</td>
+                        <td class="scan-location">
+                            <span>{{ displayCountry(scan.country) }}</span>
+                            <span v-if="scan.location_source === 'local_proxy'" class="location-badge">
+                                {{ t('qrAnalytics.locationLocalProxy') }}
+                            </span>
+                            <span v-else-if="scan.location_source === 'unknown'" class="location-badge unknown">
+                                {{ t('qrAnalytics.locationUnknown') }}
+                            </span>
+                        </td>
+                        <td>{{ displayValue(scan.city) }}</td>
+                        <td>{{ displayValue(scan.browser) }}</td>
+                        <td>{{ displayValue(scan.device) }}</td>
+                        <td>{{ displayValue(scan.referer) }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </AppLayout>
 </template>
@@ -121,7 +123,7 @@ $font-main: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     max-width: 900px;
     margin: 3rem auto;
     background: $color-bg;
-    padding: 3rem 3rem 4rem;
+    padding: clamp(1rem, 4vw, 3rem) clamp(1rem, 4vw, 3rem) clamp(1.5rem, 5vw, 4rem);
     border-radius: 24px;
     box-shadow: 0 18px 48px rgba($color-primary, 0.15),
     inset 0 0 30px rgba($color-primary-light, 0.4);
@@ -138,6 +140,10 @@ h2, h3 {
     user-select: none;
     letter-spacing: 0.05em;
     text-transform: uppercase;
+}
+
+.table-scroll {
+    overflow-x: auto;
 }
 
 .qr-summary {
@@ -200,6 +206,7 @@ h2, h3 {
     width: 100%;
     border-collapse: separate;
     border-spacing: 2px 0;
+    min-width: 680px;
     font-size: 1.05rem;
     color: $color-text-muted;
     user-select: text;

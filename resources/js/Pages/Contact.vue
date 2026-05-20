@@ -120,7 +120,7 @@ $bg-soft: #f8fafc;
 .contact-container {
     max-width: 900px;
     margin: 0 auto 4rem;
-    padding: 0 20px;
+    padding: 0 clamp(12px, 3vw, 20px);
     font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 
     h2 {
@@ -138,7 +138,7 @@ $bg-soft: #f8fafc;
 .contact-card {
     background: #ffffff;
     border-radius: 24px;
-    padding: 3rem;
+    padding: clamp(1.25rem, 4vw, 3rem);
     border: 1.5px solid $border;
     box-shadow: 0 30px 60px rgba(15, 23, 42, 0.08);
     transition: all 0.3s ease;
@@ -163,11 +163,12 @@ $bg-soft: #f8fafc;
         margin: 12px 0;
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
         gap: 12px;
 
         strong {
             color: $accent-dark;
-            min-width: 100px;
+            min-width: 84px;
         }
     }
 
@@ -316,6 +317,20 @@ $bg-soft: #f8fafc;
         align-items: flex-start;
         gap: 10px;
     }
+
+    .contact-info {
+        padding: 1.25rem;
+    }
+
+    .feedback-form .submit-btn {
+        width: 100%;
+        align-self: stretch;
+    }
+}
+
+@media (max-width: 480px) {
+    .contact-container h2 {
+        font-size: 2rem;
+    }
 }
 </style>
-

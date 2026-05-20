@@ -23,7 +23,7 @@
                     v-model="qrData.text"
                     rows="4"
                     :placeholder="t('qrGenerator.textPlaceholder')"
-                    style="width: 480px;"
+                    class="text-input-area"
                 />
             </div>
 
@@ -456,7 +456,7 @@ $bg-soft: #f8fafc;
 .qr-generator {
     max-width: 820px;
     margin: 3rem auto;
-    padding: 3rem 2rem;
+    padding: clamp(1.25rem, 4vw, 3rem) clamp(1rem, 4vw, 2rem);
     background: #fff;
     border-radius: 24px;
     box-shadow: 0 30px 60px rgba(15, 23, 42, .08);
@@ -466,12 +466,16 @@ $bg-soft: #f8fafc;
 
     h1 {
         margin-bottom: 2rem;
-        font-size: 2.4rem;
+        font-size: clamp(1.9rem, 3vw, 2.4rem);
         font-weight: 800;
         background: linear-gradient(135deg, $accent, $accent-dark);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
+}
+
+.text-input-area {
+    width: 100%;
 }
 
 .input-container {
@@ -539,7 +543,7 @@ textarea {
 
 .qr-container {
     margin-top: 3rem;
-    padding: 2.5rem;
+    padding: clamp(1rem, 3vw, 2.5rem);
     background: #fff;
     border-radius: 24px;
     box-shadow: 0 30px 60px rgba(15, 23, 42, .08);
@@ -554,6 +558,8 @@ textarea {
     margin-bottom: 2rem;
 
     canvas {
+        max-width: 100%;
+        height: auto;
         padding: 16px;
         border-radius: 20px;
         box-shadow: 0 20px 45px rgba(224, 149, 188, .35);
@@ -632,11 +638,14 @@ input[type="color"] {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-wrap: wrap;
     gap: 8px;
-    min-width: 640px;
+    min-width: 0;
+    width: 100%;
     font-size: .9rem;
     font-weight: 500;
     color: $text-secondary;
+    text-align: center;
 
     input {
         margin: 0;
@@ -703,6 +712,17 @@ input[type="color"] {
     }
     .checkbox {
         justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .qr-wrapper canvas {
+        padding: 10px;
+    }
+
+    .btn.save {
+        width: 100%;
+        padding-inline: 16px;
     }
 }
 </style>

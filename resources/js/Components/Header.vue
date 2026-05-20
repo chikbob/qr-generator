@@ -283,4 +283,58 @@ nav {
 .lang-option:hover {
     background-color: #fce7f3;
 }
+
+@media (max-width: 768px) {
+    nav {
+        padding: 12px 14px;
+        gap: 10px;
+    }
+
+    .nav-link,
+    .logout-btn {
+        padding: 9px 14px;
+        font-size: 0.95rem;
+    }
+
+    .lang-select-wrapper {
+        margin-left: 0;
+        min-width: 84px;
+    }
+}
+
+@media (max-width: 560px) {
+    nav {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: stretch;
+    }
+
+    .nav-link,
+    form,
+    .lang-select-wrapper {
+        width: 100%;
+    }
+
+    form {
+        display: contents;
+    }
+
+    .nav-link,
+    .logout-btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 44px;
+        text-align: center;
+    }
+
+    .lang-select-wrapper {
+        justify-content: center;
+    }
+
+    .lang-options {
+        width: 100%;
+        min-width: 84px;
+    }
+}
 </style>

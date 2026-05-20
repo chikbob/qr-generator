@@ -39,7 +39,7 @@ const login = async () => {
 .auth-form {
     max-width: 420px;
     margin: 5rem auto;
-    padding: 2.5rem 2.5rem;
+    padding: clamp(1.5rem, 4vw, 2.5rem);
     border-radius: 24px;
 
     background: #ffffff;

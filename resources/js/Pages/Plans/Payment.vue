@@ -144,20 +144,26 @@ function submitPayment() {
 }
 
 .payment-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem 1rem;
     max-width: 420px;
     margin: 0 auto;
     text-align: left;
 }
 
 .form-group {
-    margin-bottom: 1.2rem;
     display: flex;
     flex-direction: column;
 
     &.half {
-        width: 48%;
-        display: inline-block;
+        width: auto;
     }
+}
+
+.form-group:not(.half),
+.btn-pay {
+    grid-column: 1 / -1;
 }
 
 label {
@@ -205,6 +211,22 @@ input {
         cursor: not-allowed;
         box-shadow: none;
         color: #9d174d;
+    }
+}
+
+@media (max-width: 640px) {
+    .payment-container {
+        margin: 2rem auto;
+        padding: 1.4rem 1rem;
+    }
+
+    .payment-form {
+        grid-template-columns: 1fr;
+    }
+
+    .form-group,
+    .btn-pay {
+        grid-column: auto;
     }
 }
 </style>

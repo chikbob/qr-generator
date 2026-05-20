@@ -12,6 +12,7 @@
             </div>
 
             <div class="feedback-list-card">
+                <div class="table-scroll">
                 <table class="feedback-table">
                     <thead>
                     <tr>
@@ -56,6 +57,7 @@
                     </tr>
                     </tbody>
                 </table>
+                </div>
             </div>
 
         </div>
@@ -125,11 +127,16 @@ const formatDate = (dateStr) => {
     padding: 28px;
 }
 
+.table-scroll {
+    overflow-x: auto;
+}
+
 /* Таблица */
 .feedback-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
+    min-width: 640px;
     font-size: 1rem;
     color: #475569;
 

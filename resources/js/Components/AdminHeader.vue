@@ -186,5 +186,32 @@ const tableLabel = (table) => {
         flex-direction: column;
         align-items: flex-start;
     }
+
+    .actions {
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    .links {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+
+    .nav-link {
+        flex: 0 0 auto;
+    }
+}
+
+@media (max-width: 560px) {
+    .actions {
+        align-items: stretch;
+        justify-content: flex-start;
+    }
+
+    .to-site {
+        width: 100%;
+    }
 }
 </style>

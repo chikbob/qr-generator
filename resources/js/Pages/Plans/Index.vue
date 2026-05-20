@@ -1,7 +1,7 @@
 <template>
     <AppLayout>
         <div class="plans-container">
-            <h2 style="margin: 2rem 0; font-size: 1.8rem">{{ t('plans.title') }}</h2>
+            <h2 class="plans-title">{{ t('plans.title') }}</h2>
 
             <div v-if="flash.success" class="success-message">{{ tMaybe(flash.success) }}</div>
             <div v-if="flash.error" class="error-message">{{ tMaybe(flash.error) }}</div>
@@ -95,6 +95,11 @@ function handlePlanSelection(plan) {
     }
 }
 
+.plans-title {
+    margin: 2rem 0;
+    font-size: clamp(1.8rem, 3vw, 2.2rem);
+}
+
 .success-message {
     background: #fce7f3;
     color: #9d174d;
@@ -145,9 +150,10 @@ function handlePlanSelection(plan) {
 }
 
 .plan-name {
-    position: relative;
-    padding-right: 80px;
-
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
     font-size: 1.4rem;
     font-weight: 800;
     margin-bottom: 0.6rem;
@@ -157,11 +163,9 @@ function handlePlanSelection(plan) {
 }
 
 .current-tag {
-    position: absolute;
-    top: 0.16em;
-    right: 0;
-
-    padding: 0 10px 4px;
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
     font-size: 0.7rem;
     font-weight: 700;
     line-height: 1;
@@ -209,6 +213,12 @@ function handlePlanSelection(plan) {
         cursor: not-allowed;
         box-shadow: none;
         color: #9d174d;
+    }
+}
+
+@media (max-width: 640px) {
+    .plans-grid {
+        grid-template-columns: 1fr;
     }
 }
 </style>
