@@ -43,6 +43,7 @@ const register = () => {
 
 /* Карточка */
 .auth-form {
+    width: min(calc(100% - 2rem), 420px);
     max-width: 420px;
     margin: 5rem auto;
     padding: clamp(1.5rem, 4vw, 2.5rem);
@@ -129,8 +130,9 @@ button:active {
 /* Адаптив */
 @media (max-width: 500px) {
     .auth-form {
-        margin: 2rem 1rem;
-        padding: 2rem 1.5rem;
+        width: min(calc(100% - 1.5rem), 420px);
+        margin: 2rem auto;
+        padding: 1.75rem 1.25rem;
     }
 }
 </style>

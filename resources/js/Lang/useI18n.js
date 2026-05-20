@@ -7,9 +7,10 @@ import ua from './ua'
 const messages = { ru, en, ua }
 
 // язык по умолчанию
-const currentLang = ref(localStorage.getItem('lang') || 'ru')
+const currentLang = ref(localStorage.getItem('lang') || 'ua')
 if (typeof document !== 'undefined') {
     document.cookie = `lang=${currentLang.value}; path=/; max-age=31536000`
+    document.documentElement.lang = currentLang.value
 }
 
 export function useI18n() {
@@ -36,6 +37,7 @@ export function useI18n() {
         currentLang.value = lang
         localStorage.setItem('lang', lang)
         document.cookie = `lang=${lang}; path=/; max-age=31536000`
+        document.documentElement.lang = lang
     }
 
     return {

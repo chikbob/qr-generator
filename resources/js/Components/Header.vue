@@ -1,16 +1,16 @@
 <template>
     <header class="app-header" @click.outside="closeDropdown">
         <nav>
-            <Link href="/" class="nav-link">{{ t('header.home') }}</Link>
-            <Link href="/generate" class="nav-link">{{ t('header.generate') }}</Link>
-            <Link href="/scan" class="nav-link">{{ t('header.scan') }}</Link>
+            <Link href="/" :class="navLinkClass('/')">{{ t('header.home') }}</Link>
+            <Link href="/generate" :class="navLinkClass('/generate')">{{ t('header.generate') }}</Link>
+            <Link href="/scan" :class="navLinkClass('/scan')">{{ t('header.scan') }}</Link>
 
             <template v-if="user">
-                <Link href="/history" class="nav-link">{{ t('header.history') }}</Link>
-                <Link href="/profile" class="nav-link">{{ t('header.profile') }}</Link>
-                <Link href="/plans" class="nav-link">{{ t('header.plans') }}</Link>
-                <Link href="/contacts" class="nav-link">{{ t('header.contacts') }}</Link>
-                <Link v-if="user?.is_admin" href="/admin" class="nav-link">{{ t('header.admin') }}</Link>
+                <Link href="/history" :class="navLinkClass('/history')">{{ t('header.history') }}</Link>
+                <Link href="/profile" :class="navLinkClass('/profile')">{{ t('header.profile') }}</Link>
+                <Link href="/plans" :class="navLinkClass('/plans')">{{ t('header.plans') }}</Link>
+                <Link href="/contacts" :class="navLinkClass('/contacts')">{{ t('header.contacts') }}</Link>
+                <Link v-if="user?.is_admin" href="/admin" :class="navLinkClass('/admin', true)">{{ t('header.admin') }}</Link>
 
                 <form @submit.prevent="logout">
                     <button type="submit" class="logout-btn">{{ t('header.logout') }}</button>
@@ -80,6 +80,10 @@ const {t, setLang, currentLang} = inject('i18n')
 
 const page = usePage()
 const user = computed(() => page.props.auth?.user)
+const currentPath = computed(() => {
+    const rawUrl = page.url || '/'
+    return rawUrl.split('?')[0] || '/'
+})
 
 const form = useForm({})
 
@@ -103,6 +107,13 @@ const isOpen = ref(false)
 
 const dropdownRef = ref(null)
 const optionsListRef = ref(null)
+
+const navLinkClass = (path, startsWith = false) => ({
+    'nav-link': true,
+    'nav-link-active': startsWith
+        ? currentPath.value === path || currentPath.value.startsWith(`${path}/`)
+        : currentPath.value === path,
+})
 
 // Закрыть селект при клике вне
 onClickOutside(dropdownRef, () => {
@@ -179,18 +190,12 @@ nav {
     border-radius: 24px;
     font-weight: 600;
     font-size: 1rem;
-    transition: all 0.3s ease;
+    transition: background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
     position: relative;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.nav-link:hover {
-    background: linear-gradient(135deg, #fce7f3, #fbcfe8);
-    color: #bd6592;
-    transform: scale(1.05);
-    box-shadow: 0 8px 16px rgba(225, 108, 167, 0.2);
-}
-
-.router-link-exact-active {
+.nav-link-active {
     background: linear-gradient(135deg, #e095bc, #bd6592) !important;
     color: #fff !important;
     box-shadow: 0 6px 22px rgba(189, 101, 146, 0.45) !important;
@@ -282,6 +287,29 @@ nav {
 
 .lang-option:hover {
     background-color: #fce7f3;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .nav-link:hover {
+        background: linear-gradient(135deg, #fce7f3, #fbcfe8);
+        color: #bd6592;
+        transform: scale(1.05);
+        box-shadow: 0 8px 16px rgba(225, 108, 167, 0.2);
+    }
+
+    .logout-btn:hover {
+        background: #fce7f3;
+        box-shadow: 0 8px 24px rgba(189, 101, 146, 0.3);
+        transform: scale(1.05);
+    }
+}
+
+@media (hover: none) {
+    .nav-link:hover,
+    .logout-btn:hover {
+        transform: none;
+        box-shadow: none;
+    }
 }
 
 @media (max-width: 768px) {
