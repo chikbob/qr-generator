@@ -456,7 +456,7 @@ $bg-soft: #f8fafc;
 .qr-generator {
     max-width: 820px;
     margin: 3rem auto;
-    padding: clamp(1.25rem, 4vw, 3rem) clamp(1rem, 4vw, 2rem);
+    padding: 3rem 2rem;
     background: #fff;
     border-radius: 24px;
     box-shadow: 0 30px 60px rgba(15, 23, 42, .08);
@@ -466,7 +466,7 @@ $bg-soft: #f8fafc;
 
     h1 {
         margin-bottom: 2rem;
-        font-size: clamp(1.9rem, 3vw, 2.4rem);
+        font-size: 2.4rem;
         font-weight: 800;
         background: linear-gradient(135deg, $accent, $accent-dark);
         -webkit-background-clip: text;
@@ -543,7 +543,7 @@ textarea {
 
 .qr-container {
     margin-top: 3rem;
-    padding: clamp(1rem, 3vw, 2.5rem);
+    padding: 2.5rem;
     background: #fff;
     border-radius: 24px;
     box-shadow: 0 30px 60px rgba(15, 23, 42, .08);

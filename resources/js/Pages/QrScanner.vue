@@ -61,7 +61,7 @@
                     <button
                         @click="toggleScan"
                         :class="['scan-btn', isScanning ? 'stop' : 'start']"
-                        :disabled="isLoadingDevices || devices.length === 0"
+                        :disabled="isLoadingDevices"
                     >
                         <span v-if="isLoadingDevices">{{ $t('qrScanner.loadingDevices') }}</span>
                         <span v-else>
@@ -217,12 +217,18 @@ const requestCameraAccess = async () => {
     }
 }
 
-const getAvailableCameras = async () => {
-    if (cameraPermission.value === 'denied') {
+const getAvailableCameras = async ({requestAccess = true} = {}) => {
+    if (cameraPermission.value === 'denied' && !requestAccess) {
         error.value = $t('qrScanner.errorCameraDenied')
         return
     }
+
     if (cameraPermission.value !== 'granted') {
+        if (!requestAccess) {
+            devices.value = []
+            return
+        }
+
         const hasAccess = await requestCameraAccess()
         if (!hasAccess) return
     }
@@ -256,7 +262,7 @@ const getAvailableCameras = async () => {
 
 const refreshCameras = async () => {
     await stopScan()
-    await getAvailableCameras()
+    await getAvailableCameras({requestAccess: true})
 }
 
 const toggleScan = async () => {
@@ -269,7 +275,7 @@ const toggleScan = async () => {
 
 const startScan = async () => {
     if (!selectedDeviceId.value) {
-        await getAvailableCameras()
+        await getAvailableCameras({requestAccess: true})
         if (!selectedDeviceId.value) return
     }
 
@@ -367,7 +373,10 @@ const clearError = () => {
 
 onMounted(async () => {
     await checkCameraPermission()
-    await getAvailableCameras()
+
+    if (cameraPermission.value === 'granted') {
+        await getAvailableCameras({requestAccess: false})
+    }
 })
 
 onUnmounted(() => {
@@ -393,11 +402,11 @@ $bg-soft: #f8fafc;
     color: $text-main;
     font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     box-shadow: 0 30px 60px rgba(15, 23, 42, 0.08);
-    padding: clamp(1rem, 3vw, 2rem) clamp(1rem, 4vw, 2.5rem);
+    padding: 2rem 2.5rem;
 
     h1 {
         font-weight: 800;
-        font-size: clamp(1.9rem, 3vw, 2.4rem);
+        font-size: 2.4rem;
         margin-bottom: 2rem;
         text-align: center;
         background: linear-gradient(135deg, $accent, $accent-dark);
@@ -408,7 +417,7 @@ $bg-soft: #f8fafc;
     .scanner-wrapper {
         background: #ffffff;
         border-radius: 24px;
-        padding: clamp(1rem, 3vw, 2rem) clamp(1rem, 4vw, 2.5rem);
+        padding: 2rem 2.5rem;
         margin-bottom: 2rem;
         box-shadow: 0 30px 60px rgba(15, 23, 42, 0.08);
 
@@ -625,7 +634,7 @@ $bg-soft: #f8fafc;
     .scan-result {
         background: #ffffff;
         border-radius: 24px;
-        padding: clamp(1rem, 3vw, 2rem) clamp(1rem, 4vw, 2.5rem);
+        padding: 2rem 2.5rem;
         box-shadow: 0 30px 60px rgba(15, 23, 42, 0.08);
         margin-top: 2rem;
         color: $text-main;

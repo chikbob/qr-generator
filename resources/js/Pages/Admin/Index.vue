@@ -137,12 +137,12 @@ const tableLabel = (table) => {
 .admin-page {
     max-width: 1100px;
     margin: 0 auto;
-    padding: clamp(1rem, 3vw, 2rem) 1rem 3rem;
+    padding: 2rem 1rem 3rem;
 }
 
 h1 {
     margin: 0 0 0.5rem;
-    font-size: clamp(1.8rem, 3vw, 2.2rem);
+    font-size: 2.2rem;
     font-weight: 900;
     text-align: center;
 }
@@ -210,7 +210,7 @@ h1 {
 .insights-grid {
     margin-bottom: 1.2rem;
     display: grid;
-    grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
+    grid-template-columns: 280px 1fr;
     gap: 12px;
 }
 

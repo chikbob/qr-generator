@@ -123,7 +123,7 @@ $font-main: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     max-width: 900px;
     margin: 3rem auto;
     background: $color-bg;
-    padding: clamp(1rem, 4vw, 3rem) clamp(1rem, 4vw, 3rem) clamp(1.5rem, 5vw, 4rem);
+    padding: 3rem 3rem 4rem;
     border-radius: 24px;
     box-shadow: 0 18px 48px rgba($color-primary, 0.15),
     inset 0 0 30px rgba($color-primary-light, 0.4);

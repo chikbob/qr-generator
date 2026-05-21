@@ -402,7 +402,7 @@ $font-main: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     max-width: 1100px; /* было 1000px */
     margin: 3rem auto 5rem;
     border-radius: 20px;
-    padding: clamp(1rem, 3vw, 2.5rem) clamp(1rem, 3vw, 2rem);
+    padding: 2.5rem 2rem;
     background: #fff;
     box-shadow: 0 16px 48px rgba(236, 72, 153, 0.15);
     color: #34495e;
@@ -411,7 +411,7 @@ $font-main: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 
 h2 {
     font-weight: 900;
-    font-size: clamp(1.9rem, 3vw, 2.4rem); /* было 2.25rem */
+    font-size: 2.4rem; /* было 2.25rem */
     margin-bottom: 2rem;
     text-align: center;
     background: linear-gradient(135deg, $color-primary, $color-primary-dark);
@@ -501,7 +501,7 @@ h2 {
 
 .history-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 2rem;
 }
 

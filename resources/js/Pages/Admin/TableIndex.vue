@@ -256,7 +256,7 @@ const tableLabel = (table) => {
 .admin-page {
     max-width: 1280px;
     margin: 0 auto;
-    padding: clamp(1rem, 3vw, 1.2rem) 1rem 3rem;
+    padding: 1.2rem 1rem 3rem;
 }
 
 .top {
@@ -270,7 +270,7 @@ const tableLabel = (table) => {
 .top h1 {
     margin: 0;
     text-align: center;
-    font-size: clamp(1.6rem, 3vw, 2rem);
+    font-size: 2rem;
     overflow-wrap: anywhere;
 }
 

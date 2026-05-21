@@ -93,7 +93,7 @@ $bg-soft: #f8fafc;
 .profile-page {
     max-width: 700px;
     margin: 3rem auto 5rem;
-    padding: clamp(1.25rem, 4vw, 2.5rem) clamp(1rem, 4vw, 3rem);
+    padding: 2.5rem 3rem;
     background: #ffffff;
     border-radius: 24px;
     box-shadow: 0 30px 60px rgba(15, 23, 42, 0.08);

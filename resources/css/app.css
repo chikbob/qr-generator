@@ -46,7 +46,7 @@ table {
 .profile-page,
 .qr-generator,
 .home-view {
-    width: min(100%, 800px);
+    width: min(100%, 1400px);
     margin: 2rem auto;
     padding: 0 1.25rem;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;

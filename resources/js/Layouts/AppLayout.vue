@@ -25,6 +25,6 @@ import Footer from '@/Components/Footer.vue'
 .layout-content {
     flex: 1;
     width: 100%;
-    padding: clamp(12px, 2vw, 24px);
+    padding: 20px;
 }
 </style>

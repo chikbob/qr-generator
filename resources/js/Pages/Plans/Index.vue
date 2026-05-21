@@ -97,7 +97,7 @@ function handlePlanSelection(plan) {
 
 .plans-title {
     margin: 2rem 0;
-    font-size: clamp(1.8rem, 3vw, 2.2rem);
+    font-size: 1.8rem;
 }
 
 .success-message {
@@ -150,10 +150,8 @@ function handlePlanSelection(plan) {
 }
 
 .plan-name {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 10px;
+    position: relative;
+    padding-right: 80px;
     font-size: 1.4rem;
     font-weight: 800;
     margin-bottom: 0.6rem;
@@ -163,9 +161,10 @@ function handlePlanSelection(plan) {
 }
 
 .current-tag {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 10px;
+    position: absolute;
+    top: 0.16em;
+    right: 0;
+    padding: 0 10px 4px;
     font-size: 0.7rem;
     font-weight: 700;
     line-height: 1;
@@ -219,6 +218,21 @@ function handlePlanSelection(plan) {
 @media (max-width: 640px) {
     .plans-grid {
         grid-template-columns: 1fr;
+    }
+
+    .plan-name {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+        padding-right: 0;
+    }
+
+    .current-tag {
+        position: static;
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
     }
 }
 </style>
