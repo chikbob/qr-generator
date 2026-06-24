@@ -25,7 +25,7 @@ class QrCodeController extends Controller
         ] : null;
     }
 
-    // 🟢 Список QR-кодів користувача
+    // Список QR-кодов пользователя
     public function index(Request $request)
     {
         $user = auth()->user();
@@ -113,7 +113,7 @@ class QrCodeController extends Controller
     }
 
 
-    // 🟡 Створення нового QR-коду (звичайного або динамічного)
+    // Создание нового QR-кода (обычного или динамического)
     public function store(Request $request)
     {
         $user = auth()->user();
@@ -207,18 +207,18 @@ class QrCodeController extends Controller
             $agent->setUserAgent($request->userAgent());
             $referer = $request->headers->get('referer');
 
-            // 🔹 Геолокація — без заглушки
-            $country = 'Невідомо';
-            $city = 'Невідомо';
+            // Геолокация
+            $country = 'Неизвестно';
+            $city = 'Неизвестно';
 
             try {
                 $geo = Http::get("https://ipinfo.io/{$ip}/json")->json();
-                $country = $geo['country'] ?? 'Невідомо';
-                $city = $geo['city'] ?? 'Невідомо';
+                $country = $geo['country'] ?? 'Неизвестно';
+                $city = $geo['city'] ?? 'Неизвестно';
 
                 if (!empty($geo['country_name'])) {
                     $country = $geo['country_name'];
-                    $city = $geo['city'] ?? 'Невідомо';
+                    $city = $geo['city'] ?? 'Неизвестно';
                 }
             } catch (\Exception $e) {
                 // Можна залогувати помилку
@@ -231,8 +231,8 @@ class QrCodeController extends Controller
                 'country' => $country,
                 'city' => $city,
                 'user_agent' => $request->userAgent(),
-                'device' => $agent->device() ?: 'Невідомо',
-                'browser' => $agent->browser() ?: 'Невідомо',
+                'device' => $agent->device() ?: 'Неизвестно',
+                'browser' => $agent->browser() ?: 'Неизвестно',
                 'referer' => $referer,
             ]);
         }
@@ -460,7 +460,7 @@ class QrCodeController extends Controller
     {
         $normalized = trim((string) $value);
 
-        return $normalized === '' || in_array($normalized, ['Невідомо', 'Неизвестно', 'Unknown', 'unknown', '—', '-'], true);
+        return $normalized === '' || in_array($normalized, ['Неизвестно', 'Unknown', 'unknown', '—', '-'], true);
     }
 
     protected function shouldRedirectAway(string $content): bool

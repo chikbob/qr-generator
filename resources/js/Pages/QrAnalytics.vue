@@ -74,7 +74,7 @@ const displayValue = (value) => {
     }
 
     const normalized = String(value).trim().toLowerCase()
-    if (["невідомо", "неизвестно", "unknown"].includes(normalized)) {
+    if (["неизвестно", "unknown"].includes(normalized)) {
         return t('qrAnalytics.notAvailable')
     }
 

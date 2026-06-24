@@ -14,17 +14,17 @@
                     v-model="searchQuery"
                     type="search"
                     class="search-input search-grow"
-                    :placeholder="`Пошук по таблиці ${table}`"
+                    :placeholder="`${t('admin.common.searchPlaceholder')} ${tableLabel(table)}`"
                 />
 
                 <select v-model="filterColumn" class="search-input select-input">
-                    <option value="">Фільтр: усі поля</option>
+                    <option value="">{{ t('admin.common.filterAllFields') }}</option>
                     <option
                         v-for="column in filterableColumns"
                         :key="column"
                         :value="column"
                     >
-                        {{ column }}
+                        {{ columnLabel(column) }}
                     </option>
                 </select>
 
@@ -33,12 +33,12 @@
                     type="search"
                     class="search-input search-grow"
                     :disabled="!filterColumn"
-                    placeholder="Значення фільтра"
+                    :placeholder="t('admin.common.filterValuePlaceholder')"
                 />
 
-                <button type="submit" class="btn btn-search">Пошук</button>
+                <button type="submit" class="btn btn-search">{{ t('admin.common.search') }}</button>
                 <button type="button" class="btn btn-search-secondary" @click="resetFilters">
-                    Скинути
+                    {{ t('admin.common.reset') }}
                 </button>
             </form>
 
@@ -52,7 +52,7 @@
                                 class="sort-btn"
                                 @click="toggleSort(column.name)"
                             >
-                                <span>{{ column.name }}</span>
+                                <span>{{ columnLabel(column.name) }}</span>
                                 <span class="sort-arrow" :class="{ active: filters?.sort_by === column.name }">
                                     {{ sortArrow(column.name) }}
                                 </span>
@@ -94,7 +94,7 @@
                     :class="{ active: link.active }"
                     :disabled="!link.url"
                     @click="go(link.url)"
-                    v-html="link.label"
+                    v-html="paginationLabel(link.label)"
                 />
             </div>
         </div>
@@ -231,8 +231,16 @@ const rowKey = (row) => {
 
 const printValue = (value) => {
     if (value === null || value === undefined || value === '') return '—'
+    if (typeof value === 'boolean') return value ? t('common.yes') : t('common.no')
     if (typeof value === 'object') return JSON.stringify(value)
     return String(value)
+}
+
+const paginationLabel = (label) => {
+    if (typeof label !== 'string') return label
+    if (label.includes('Previous')) return `&laquo; ${t('admin.common.paginationPrevious')}`
+    if (label.includes('Next')) return `${t('admin.common.paginationNext')} &raquo;`
+    return label
 }
 
 const removeRow = (row) => {
@@ -249,6 +257,11 @@ const tableLabel = (table) => {
         return table
     }
     return `${localized} (${table})`
+}
+
+const columnLabel = (column) => {
+    const localized = tMaybe(`admin.columns.${column}`)
+    return localized === `admin.columns.${column}` ? column : localized
 }
 </script>
 

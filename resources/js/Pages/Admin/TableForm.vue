@@ -34,7 +34,7 @@
                             }"
                         >
                             <label :for="column.name" class="field-label">
-                                <span>{{ column.name }}</span>
+                                <span>{{ columnLabel(column.name) }}</span>
                                 <span class="field-badges">
                                     <small v-if="!column.nullable" class="required-badge">{{ t('admin.form.required') }}</small>
                                     <small class="type-badge">{{ column.type }}</small>
@@ -167,6 +167,11 @@ const tableLabel = (table) => {
         return table
     }
     return `${localized} (${table})`
+}
+
+const columnLabel = (column) => {
+    const localized = tMaybe(`admin.columns.${column}`)
+    return localized === `admin.columns.${column}` ? column : localized
 }
 </script>
 

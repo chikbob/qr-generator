@@ -16,22 +16,16 @@ class PlanSeeder extends Seeder
         Plan::updateOrCreate(
             ['name' => 'Free'],
             [
-                'description' => 'Безкоштовний тариф з базовим функціоналом',
+                'description' => 'Бесплатный тариф с базовым функционалом',
                 'price' => 0,
                 'is_default' => true,
             ]
         );
 
-        /* На русском
-         * Бесплатный тариф с базовым функционалом
-         * Платный тариф с расширенными возможностями
-         * Тариф для корпоративных клиентов
-         */
-
         Plan::updateOrCreate(
             ['name' => 'Pro'],
             [
-                'description' => 'Платний тариф із розширеними можливостями',
+                'description' => 'Платный тариф с расширенными возможностями',
                 'price' => 9.99,
                 'is_default' => false,
             ]
@@ -40,7 +34,7 @@ class PlanSeeder extends Seeder
         Plan::updateOrCreate(
             ['name' => 'Enterprise'],
             [
-                'description' => 'Тариф для корпоративних клієнтів',
+                'description' => 'Тариф для корпоративных клиентов',
                 'price' => 29.99,
                 'is_default' => false,
             ]
