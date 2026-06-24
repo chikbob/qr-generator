@@ -2,12 +2,14 @@ import { ref } from 'vue'
 
 import ru from './ru'
 import en from './en'
-import ua from './ua'
 
-const messages = { ru, en, ua }
+const messages = { ru, en }
+const defaultLang = 'ru'
+const storedLang = typeof localStorage !== 'undefined' ? localStorage.getItem('lang') : null
+const initialLang = messages[storedLang] ? storedLang : defaultLang
 
 // язык по умолчанию
-const currentLang = ref(localStorage.getItem('lang') || 'ua')
+const currentLang = ref(initialLang)
 if (typeof document !== 'undefined') {
     document.cookie = `lang=${currentLang.value}; path=/; max-age=31536000`
     document.documentElement.lang = currentLang.value
